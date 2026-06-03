@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CodeDump — Consolidate any repo into a single file</title>
+    <title>CodeDump</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -26,7 +26,6 @@
         --green: #3ecf8e;
         --green-dim: #0f3d2a;
         --red: #f56565;
-        --yellow: #f6c90e;
         --radius: 8px;
         --radius-sm: 5px;
         --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -58,14 +57,8 @@
         transition: border-color 0.15s;
         width: 100%;
       }
-      input:focus, textarea:focus {
-        border-color: var(--accent);
-      }
-      input[type="checkbox"] {
-        width: auto;
-        accent-color: var(--accent);
-        cursor: pointer;
-      }
+      input:focus, textarea:focus { border-color: var(--accent); }
+      input[type="checkbox"] { width: auto; accent-color: var(--accent); cursor: pointer; }
 
       button {
         cursor: pointer;
@@ -78,34 +71,14 @@
       }
       button:disabled { opacity: 0.45; cursor: not-allowed; }
 
-      .btn-primary {
-        background: var(--accent);
-        color: #fff;
-        font-weight: 600;
-      }
+      .btn-primary { background: var(--accent); color: #fff; font-weight: 600; }
       .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
 
-      .btn-secondary {
-        background: var(--surface2);
-        color: var(--text);
-        border: 1px solid var(--border);
-      }
+      .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
       .btn-secondary:hover:not(:disabled) { border-color: var(--border2); background: var(--border); }
 
-      .btn-ghost {
-        background: transparent;
-        color: var(--text-muted);
-        padding: 4px 8px;
-        font-size: 12px;
-      }
+      .btn-ghost { background: transparent; color: var(--text-muted); padding: 4px 8px; font-size: 12px; }
       .btn-ghost:hover:not(:disabled) { color: var(--text); background: var(--surface2); }
-
-      .btn-danger {
-        background: #3d1515;
-        color: var(--red);
-        border: 1px solid #5a2020;
-      }
-      .btn-danger:hover:not(:disabled) { background: #4d1a1a; }
 
       ::-webkit-scrollbar { width: 6px; height: 6px; }
       ::-webkit-scrollbar-track { background: transparent; }
@@ -135,11 +108,27 @@
         border: 1px solid var(--border);
       }
 
-      .divider {
-        height: 1px;
-        background: var(--border);
-        margin: 0;
+      .lang-toggle {
+        display: flex;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 2px;
+        gap: 2px;
       }
+      .lang-btn {
+        padding: 3px 9px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        background: transparent;
+        color: var(--text-muted);
+        border: none;
+        transition: background 0.12s, color 0.12s;
+      }
+      .lang-btn.active { background: var(--accent); color: #fff; }
+      .lang-btn:hover:not(.active) { color: var(--text); background: var(--border); }
 
       .layout {
         display: grid;
@@ -168,17 +157,10 @@
       }
       .topbar-logo span { color: var(--accent); }
       .topbar-sep { flex: 1; }
-      .topbar-desc {
-        font-size: 12px;
-        color: var(--text-dim);
-      }
+      .topbar-desc { font-size: 12px; color: var(--text-dim); }
 
-      .main {
-        display: flex;
-        overflow: hidden;
-      }
+      .main { display: flex; overflow: hidden; }
 
-      /* Landing */
       .landing {
         display: flex;
         flex-direction: column;
@@ -189,9 +171,7 @@
         gap: 40px;
         padding: 40px;
       }
-      .landing-hero {
-        text-align: center;
-      }
+      .landing-hero { text-align: center; }
       .landing-hero h1 {
         font-size: 36px;
         font-weight: 800;
@@ -207,12 +187,7 @@
         margin: 0 auto;
         line-height: 1.6;
       }
-      .landing-cards {
-        display: flex;
-        gap: 16px;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
+      .landing-cards { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
       .source-card {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -222,70 +197,12 @@
         cursor: pointer;
         transition: border-color 0.15s, background 0.15s, transform 0.1s;
       }
-      .source-card:hover {
-        border-color: var(--accent);
-        background: var(--surface2);
-        transform: translateY(-2px);
-      }
-      .source-card-icon {
-        font-size: 32px;
-        margin-bottom: 14px;
-      }
-      .source-card h3 {
-        font-size: 17px;
-        font-weight: 700;
-        margin-bottom: 6px;
-        letter-spacing: -0.02em;
-      }
-      .source-card p {
-        font-size: 13px;
-        color: var(--text-muted);
-        line-height: 1.55;
-      }
+      .source-card:hover { border-color: var(--accent); background: var(--surface2); transform: translateY(-2px); }
+      .source-card-icon { font-size: 32px; margin-bottom: 14px; }
+      .source-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.02em; }
+      .source-card p { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
 
-      /* Source config panel */
-      .source-panel {
-        width: 420px;
-        flex-shrink: 0;
-        border-right: 1px solid var(--border);
-        background: var(--surface);
-        display: flex;
-        flex-direction: column;
-        overflow-y: auto;
-      }
-      .panel-section {
-        padding: 16px;
-        border-bottom: 1px solid var(--border);
-      }
-      .panel-section:last-child { border-bottom: none; }
-      .panel-label {
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--text-dim);
-        margin-bottom: 10px;
-      }
-
-      .field { margin-bottom: 10px; }
-      .field-label {
-        display: block;
-        font-size: 12px;
-        color: var(--text-muted);
-        margin-bottom: 5px;
-        font-weight: 500;
-      }
-      .field-hint {
-        font-size: 11px;
-        color: var(--text-dim);
-        margin-top: 4px;
-      }
-
-      .source-tabs {
-        display: flex;
-        border-bottom: 1px solid var(--border);
-        background: var(--surface);
-      }
+      .source-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); }
       .source-tab {
         flex: 1;
         padding: 14px 0;
@@ -302,13 +219,9 @@
         border-right: none;
         border-radius: 0;
       }
-      .source-tab.active {
-        color: var(--accent);
-        border-bottom-color: var(--accent);
-      }
+      .source-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
       .source-tab:hover:not(.active) { color: var(--text); }
 
-      /* Drop zone */
       .dropzone {
         border: 2px dashed var(--border);
         border-radius: var(--radius);
@@ -318,22 +231,13 @@
         transition: border-color 0.15s, background 0.15s;
         background: var(--surface2);
       }
-      .dropzone:hover, .dropzone.drag-over {
-        border-color: var(--accent);
-        background: var(--accent-dim);
-      }
+      .dropzone:hover, .dropzone.drag-over { border-color: var(--accent); background: var(--accent-dim); }
       .dropzone-icon { font-size: 28px; margin-bottom: 10px; }
       .dropzone-text { color: var(--text-muted); font-size: 13px; }
       .dropzone-text strong { color: var(--text); }
       .dropzone-limit { font-size: 11px; color: var(--text-dim); margin-top: 6px; }
 
-      /* File tree */
-      .file-tree-area {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
+      .file-tree-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
       .file-tree-toolbar {
         padding: 10px 14px;
         border-bottom: 1px solid var(--border);
@@ -343,16 +247,9 @@
         gap: 8px;
         flex-shrink: 0;
       }
-      .file-tree-toolbar-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .file-tree-scroll {
-        flex: 1;
-        overflow-y: auto;
-        padding: 6px 0;
-      }
+      .file-tree-toolbar-row { display: flex; align-items: center; gap: 8px; }
+      .file-tree-scroll { flex: 1; overflow-y: auto; padding: 6px 0; }
+
       .tree-node {
         display: flex;
         align-items: center;
@@ -369,13 +266,7 @@
       .tree-node:hover { background: var(--surface2); color: var(--text); }
       .tree-node.selected { color: var(--text); }
       .tree-node-checkbox { flex-shrink: 0; }
-      .tree-node-toggle {
-        width: 14px;
-        flex-shrink: 0;
-        color: var(--text-dim);
-        font-size: 10px;
-        text-align: center;
-      }
+      .tree-node-toggle { width: 14px; flex-shrink: 0; color: var(--text-dim); font-size: 10px; text-align: center; }
       .tree-node-icon { flex-shrink: 0; font-size: 13px; }
       .tree-node-name { overflow: hidden; text-overflow: ellipsis; flex: 1; }
       .tree-node-ext { color: var(--text-dim); font-size: 11px; flex-shrink: 0; }
@@ -391,7 +282,6 @@
         background: var(--surface);
       }
 
-      /* Format options */
       .format-panel {
         width: 300px;
         flex-shrink: 0;
@@ -401,6 +291,21 @@
         flex-direction: column;
         overflow-y: auto;
       }
+
+      .panel-section { padding: 16px; border-bottom: 1px solid var(--border); }
+      .panel-section:last-child { border-bottom: none; }
+      .panel-label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+        margin-bottom: 10px;
+      }
+
+      .field { margin-bottom: 10px; }
+      .field-label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; font-weight: 500; }
+      .field-hint { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
 
       .toggle-row {
         display: flex;
@@ -414,13 +319,7 @@
       .toggle-info-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
       .toggle-info-desc { font-size: 11px; color: var(--text-dim); }
 
-      .switch {
-        position: relative;
-        width: 34px;
-        height: 18px;
-        flex-shrink: 0;
-        margin-top: 2px;
-      }
+      .switch { position: relative; width: 34px; height: 18px; flex-shrink: 0; margin-top: 2px; }
       .switch input { opacity: 0; width: 0; height: 0; }
       .switch-track {
         position: absolute;
@@ -444,10 +343,7 @@
       }
       .switch input:checked ~ .switch-thumb { transform: translateX(16px); }
 
-      .output-row {
-        display: flex;
-        gap: 6px;
-      }
+      .output-row { display: flex; gap: 6px; }
       .output-btn {
         flex: 1;
         padding: 8px;
@@ -461,43 +357,15 @@
         transition: border-color 0.15s, color 0.15s, background 0.15s;
         cursor: pointer;
       }
-      .output-btn.active {
-        border-color: var(--accent);
-        color: var(--accent);
-        background: var(--accent-dim);
-      }
+      .output-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
       .output-btn:hover:not(.active) { border-color: var(--border2); color: var(--text); }
 
-      .generate-btn {
-        width: 100%;
-        padding: 12px;
-        font-size: 14px;
-        font-weight: 700;
-        border-radius: var(--radius);
-        letter-spacing: -0.01em;
-      }
+      .generate-btn { width: 100%; padding: 12px; font-size: 14px; font-weight: 700; border-radius: var(--radius); letter-spacing: -0.01em; }
 
-      /* Progress / status */
-      .progress-bar-wrap {
-        height: 3px;
-        background: var(--border);
-        border-radius: 99px;
-        overflow: hidden;
-        margin-top: 6px;
-      }
-      .progress-bar {
-        height: 100%;
-        background: var(--accent);
-        border-radius: 99px;
-        transition: width 0.3s;
-      }
+      .progress-bar-wrap { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; margin-top: 6px; }
+      .progress-bar { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.3s; }
 
-      .status-msg {
-        font-size: 12px;
-        padding: 8px 10px;
-        border-radius: var(--radius-sm);
-        margin-top: 8px;
-      }
+      .status-msg { font-size: 12px; padding: 8px 10px; border-radius: var(--radius-sm); margin-top: 8px; }
       .status-msg.error { background: #2d1010; color: var(--red); border: 1px solid #4a1a1a; }
       .status-msg.success { background: var(--green-dim); color: var(--green); border: 1px solid #1a4d35; }
       .status-msg.info { background: var(--accent-dim); color: var(--accent); border: 1px solid #1e3a6e; }
@@ -514,31 +382,15 @@
       }
       @keyframes spin { to { transform: rotate(360deg); } }
 
-      .empty-state {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        gap: 10px;
-        color: var(--text-dim);
-        font-size: 13px;
-        text-align: center;
-        padding: 32px;
-      }
-      .empty-state-icon { font-size: 36px; opacity: 0.4; }
-
-      @media (max-width: 900px) {
-        .format-panel { display: none; }
-      }
+      @media (max-width: 900px) { .format-panel { display: none; } }
     </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="text/babel" data-type="module">
-      const { useState, useRef, useCallback, useMemo, useEffect } = React;
+      const { useState, useRef, useMemo, useEffect } = React;
 
-      // ─── Constants ──────────────────────────────────────────────────────────────
+      // ─── Constants ───────────────────────────────────────────────────────────────
 
       const EXT_LANG_MAP = {
         js: 'javascript', jsx: 'jsx', ts: 'typescript', tsx: 'tsx',
@@ -552,7 +404,7 @@
         r: 'r', sql: 'sql', graphql: 'graphql', gql: 'graphql',
         vue: 'vue', svelte: 'svelte', astro: 'astro',
         tf: 'hcl', dockerfile: 'dockerfile', makefile: 'makefile',
-        env: 'ini', ini: 'ini', conf: 'ini', gitignore: 'gitignore',
+        env: 'ini', ini: 'ini', conf: 'ini',
       };
 
       const BINARY_EXTS = new Set([
@@ -566,12 +418,126 @@
       ]);
 
       const ALWAYS_EXCLUDE = ['.DS_Store', 'Thumbs.db', '__MACOSX'];
-
       const DEFAULT_HEADER = '// ==================== {filepath} ====================';
-
       const ZIP_LIMIT = 15 * 1024 * 1024;
 
-      // ─── Utilities ──────────────────────────────────────────────────────────────
+      // ─── i18n ────────────────────────────────────────────────────────────────────
+
+      const LANGS = {
+        es: {
+          tagline: 'Consolida cualquier repo en un solo archivo',
+          landingH1a: 'Exportá tu repo como un solo',
+          landingH1b: 'archivo',
+          landingSubtitle: 'Elegí una fuente, seleccioná qué incluir, configurá el formato y descargá.',
+          cardGithubTitle: 'Repositorio de GitHub',
+          cardGithubDesc: 'Cargá cualquier repo público sin autenticación, o usá un Personal Access Token para repos privados.',
+          cardZipTitle: 'Subir ZIP',
+          cardZipDesc: 'Extraé y procesá un archivo ZIP local directamente en el navegador. Sin uploads, sin servidor.',
+          tabGithub: 'GitHub',
+          tabZip: 'Archivo ZIP',
+          labelRepoUrl: 'URL del repositorio',
+          labelToken: 'Personal Access Token',
+          labelTokenOpt: '(opcional, para repos privados)',
+          hintToken: 'El token no se loguea ni se persiste en ningún lugar.',
+          placeholderUrl: 'https://github.com/owner/repo',
+          placeholderToken: 'ghp_...',
+          btnLoad: 'Cargar repositorio',
+          btnLoading: 'Cargando...',
+          dropzoneStrong: 'Hacé clic para buscar',
+          dropzoneOr: 'o arrastrá un archivo ZIP',
+          dropzoneLimit: 'Máximo 15 MB',
+          back: 'Volver',
+          home: 'Inicio',
+          changeSource: 'Cambiar fuente',
+          placeholderExtFilter: 'Filtrar por extensión: .js, .ts, .jsx',
+          placeholderExclude: 'Excluir patrones: node_modules, *.test.js, dist',
+          btnAll: 'Todo',
+          btnNone: 'Ninguno',
+          statsSelected: 'seleccionados',
+          statsTotal: 'total',
+          statsFolders: 'carpetas',
+          panelFormat: 'Opciones de formato',
+          panelOutput: 'Formato de salida',
+          panelVars: 'Variables para el header',
+          toggleHeader: 'Header por archivo',
+          toggleHeaderDesc: 'Inserta una línea separadora antes de cada archivo',
+          toggleBlankLines: 'Eliminar líneas en blanco',
+          toggleBlankLinesDesc: 'Quita las líneas que solo contienen espacios',
+          toggleComments: 'Eliminar comentarios',
+          toggleCommentsDesc: 'Quita // # /* */ <!-- --> según el tipo de archivo',
+          toggleIndent: 'Eliminar indentación',
+          toggleIndentDesc: 'Quita los espacios al inicio de cada línea',
+          toggleLineBreaks: 'Eliminar saltos de línea',
+          toggleLineBreaksDesc: 'Consolida todo el contenido en una sola línea',
+          btnDownload: 'Descargar',
+          hintNoFiles: 'Seleccioná al menos un archivo para exportar.',
+          filesLoaded: (n, name) => `Se cargaron ${n} archivos de ${name}`,
+          errInvalidUrl: 'URL inválida. Se esperaba: https://github.com/owner/repo',
+          errLoad: 'Error al cargar el repositorio',
+          errZip: 'Error al procesar el ZIP',
+          errZipSize: (mb) => `El archivo supera el límite de 15 MB (${mb} MB)`,
+        },
+        en: {
+          tagline: 'Consolidate any repo into a single file',
+          landingH1a: 'Export your repo as one',
+          landingH1b: 'file',
+          landingSubtitle: 'Pick a source, select what to include, configure the format, and download.',
+          cardGithubTitle: 'GitHub Repository',
+          cardGithubDesc: 'Load any public repo without authentication, or use a Personal Access Token for private repos.',
+          cardZipTitle: 'Upload ZIP',
+          cardZipDesc: 'Extract and process a local ZIP archive directly in your browser. No upload, no server.',
+          tabGithub: 'GitHub',
+          tabZip: 'ZIP File',
+          labelRepoUrl: 'Repository URL',
+          labelToken: 'Personal Access Token',
+          labelTokenOpt: '(optional, for private repos)',
+          hintToken: 'Token is never logged or stored anywhere.',
+          placeholderUrl: 'https://github.com/owner/repo',
+          placeholderToken: 'ghp_...',
+          btnLoad: 'Load Repository',
+          btnLoading: 'Loading...',
+          dropzoneStrong: 'Click to browse',
+          dropzoneOr: 'or drag & drop a ZIP file',
+          dropzoneLimit: 'Max 15 MB',
+          back: 'Back',
+          home: 'Home',
+          changeSource: 'Change source',
+          placeholderExtFilter: 'Filter by extension: .js, .ts, .jsx',
+          placeholderExclude: 'Exclude patterns: node_modules, *.test.js, dist',
+          btnAll: 'All',
+          btnNone: 'None',
+          statsSelected: 'selected',
+          statsTotal: 'total',
+          statsFolders: 'folders',
+          panelFormat: 'Format Options',
+          panelOutput: 'Output Format',
+          panelVars: 'Header variables',
+          toggleHeader: 'File headers',
+          toggleHeaderDesc: 'Insert a separator line before each file',
+          toggleBlankLines: 'Strip blank lines',
+          toggleBlankLinesDesc: 'Remove lines that contain only whitespace',
+          toggleComments: 'Strip comments',
+          toggleCommentsDesc: 'Remove // # /* */ <!-- --> based on file type',
+          toggleIndent: 'Strip indentation',
+          toggleIndentDesc: 'Remove leading whitespace from every line',
+          toggleLineBreaks: 'Strip line breaks',
+          toggleLineBreaksDesc: 'Collapse all content to a single line',
+          btnDownload: 'Download',
+          hintNoFiles: 'Select at least one file to export.',
+          filesLoaded: (n, name) => `Loaded ${n} files from ${name}`,
+          errInvalidUrl: 'Invalid GitHub URL. Expected: https://github.com/owner/repo',
+          errLoad: 'Failed to load repository',
+          errZip: 'Failed to process ZIP',
+          errZipSize: (mb) => `File exceeds 15 MB limit (${mb} MB)`,
+        },
+      };
+
+      function detectLang() {
+        const l = (navigator.language || 'en').toLowerCase();
+        return l.startsWith('es') ? 'es' : 'en';
+      }
+
+      // ─── Utilities ───────────────────────────────────────────────────────────────
 
       function getExt(filename) {
         const parts = filename.split('.');
@@ -606,75 +572,50 @@
         return EXT_LANG_MAP[ext] || ext || 'text';
       }
 
-      function buildHeaderTemplate(template, { filename, filepath, extension }) {
+      function buildHeader(template, { filename, filepath, extension }) {
         return template
           .replace(/\{filename\}/g, filename)
           .replace(/\{filepath\}/g, filepath)
           .replace(/\{extension\}/g, extension);
       }
 
-      function removeLineComments(line, ext) {
-        const lineCommentMap = {
-          js: '//', jsx: '//', ts: '//', tsx: '//', java: '//', cs: '//',
-          cpp: '//', c: '//', h: '//', hpp: '//', go: '//', rs: '//',
-          swift: '//', kt: '//', php: '//', py: '#', rb: '#',
-          sh: '#', bash: '#', zsh: '#', yaml: '#', yml: '#', toml: '#',
-          r: '#', lua: '--', sql: '--',
+      function removeLineComment(line, ext) {
+        const markers = {
+          js:'//',jsx:'//',ts:'//',tsx:'//',java:'//',cs:'//',cpp:'//',c:'//',
+          h:'//',hpp:'//',go:'//',rs:'//',swift:'//',kt:'//',php:'//',
+          py:'#',rb:'#',sh:'#',bash:'#',zsh:'#',yaml:'#',yml:'#',toml:'#',r:'#',
+          lua:'--',sql:'--',
         };
-        const marker = lineCommentMap[ext];
+        const marker = markers[ext];
         if (!marker) return line;
         const idx = line.indexOf(marker);
         if (idx === -1) return line;
-        const before = line.slice(0, idx);
-        if (!/['"`]/.test(before)) {
-          return before.trimEnd();
-        }
+        if (!/['"`]/.test(line.slice(0, idx))) return line.slice(0, idx).trimEnd();
         return line;
       }
 
       function stripComments(content, ext) {
-        const blockCommentExts = new Set([
+        const blockExts = new Set([
           'js','jsx','ts','tsx','java','cs','cpp','c','h','hpp',
           'go','rs','swift','kt','php','css','scss','sass','less',
         ]);
         let result = content;
-        if (blockCommentExts.has(ext)) {
-          result = result.replace(/\/\*[\s\S]*?\*\//g, '');
-        }
-        if (ext === 'html' || ext === 'xml' || ext === 'svg') {
-          result = result.replace(/<!--[\s\S]*?-->/g, '');
-        }
-        const lines = result.split('\n');
-        return lines.map(l => removeLineComments(l, ext)).join('\n');
+        if (blockExts.has(ext)) result = result.replace(/\/\*[\s\S]*?\*\//g, '');
+        if (ext === 'html' || ext === 'xml' || ext === 'svg') result = result.replace(/<!--[\s\S]*?-->/g, '');
+        return result.split('\n').map(l => removeLineComment(l, ext)).join('\n');
       }
 
       function processContent(content, ext, opts) {
-        let result = content;
-
-        if (opts.stripComments) {
-          result = stripComments(result, ext);
-        }
-
+        let result = opts.stripComments ? stripComments(content, ext) : content;
         let lines = result.split('\n');
-
-        if (opts.stripBlankLines) {
-          lines = lines.filter(l => l.trim().length > 0);
-        }
-
-        if (opts.stripIndentation) {
-          lines = lines.map(l => l.trimStart());
-        }
-
+        if (opts.stripBlankLines) lines = lines.filter(l => l.trim().length > 0);
+        if (opts.stripIndentation) lines = lines.map(l => l.trimStart());
         result = lines.join('\n');
-
-        if (opts.stripLineBreaks) {
-          result = result.replace(/\n+/g, ' ').trim();
-        }
-
+        if (opts.stripLineBreaks) result = result.replace(/\n+/g, ' ').trim();
         return result;
       }
 
-      // ─── GitHub API ─────────────────────────────────────────────────────────────
+      // ─── GitHub API ──────────────────────────────────────────────────────────────
 
       function parseGitHubUrl(url) {
         const clean = url.trim().replace(/\/$/, '').replace(/\.git$/, '');
@@ -706,97 +647,67 @@
         const treeData = await treeRes.json();
 
         return {
-          files: treeData.tree
-            .filter(item => item.type === 'blob')
-            .map(item => ({ path: item.path, size: item.size, sha: item.sha })),
-          owner,
-          repo,
-          branch,
-          headers,
+          files: treeData.tree.filter(i => i.type === 'blob').map(i => ({ path: i.path, size: i.size })),
+          owner, repo, branch, headers,
         };
       }
 
-      async function fetchGitHubFileContent(owner, repo, path, branch, headers) {
+      async function fetchFileContent(owner, repo, path, branch, headers) {
         const res = await fetch(
           `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${branch}`,
           { headers }
         );
-        if (!res.ok) throw new Error(`Failed to fetch ${path}: HTTP ${res.status}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        if (data.encoding === 'base64') {
-          return atob(data.content.replace(/\s/g, ''));
-        }
-        throw new Error(`Unexpected encoding for ${path}`);
+        if (data.encoding === 'base64') return atob(data.content.replace(/\s/g, ''));
+        throw new Error('Unexpected encoding');
       }
 
-      // ─── ZIP processing ─────────────────────────────────────────────────────────
+      // ─── ZIP ─────────────────────────────────────────────────────────────────────
 
       async function processZip(file) {
         const zip = await JSZip.loadAsync(file);
-        const files = [];
-
+        const entries = [];
         for (const [path, entry] of Object.entries(zip.files)) {
           if (entry.dir) continue;
           const parts = path.split('/');
           if (parts.some(p => ALWAYS_EXCLUDE.includes(p))) continue;
-          const filename = parts[parts.length - 1];
-          if (!filename || filename.startsWith('.')) {
-            // include hidden files except always-excluded
-          }
-          files.push({ path, entry });
-        }
-
-        const result = [];
-        for (const { path, entry } of files) {
-          const ext = getExt(path);
           if (isBinary(path)) continue;
           try {
             const content = await entry.async('text');
-            result.push({ path, content });
+            entries.push({ path, content });
           } catch {}
         }
-        return result;
+        return entries;
       }
 
       // ─── Tree building ───────────────────────────────────────────────────────────
 
       function buildTree(filePaths) {
-        const root = { name: '', children: {}, files: [], path: '' };
-
+        const root = { children: {}, files: [] };
         for (const fp of filePaths) {
           const parts = fp.split('/');
-          let node = root;
-          const dirs = parts.slice(0, -1);
           const file = parts[parts.length - 1];
-
-          for (let i = 0; i < dirs.length; i++) {
-            const dir = dirs[i];
+          let node = root;
+          for (let i = 0; i < parts.length - 1; i++) {
+            const dir = parts[i];
             if (!node.children[dir]) {
-              node.children[dir] = {
-                name: dir,
-                children: {},
-                files: [],
-                path: parts.slice(0, i + 1).join('/'),
-              };
+              node.children[dir] = { name: dir, children: {}, files: [], path: parts.slice(0, i + 1).join('/') };
             }
             node = node.children[dir];
           }
           node.files.push({ name: file, path: fp });
         }
-
         return root;
       }
 
-      function flattenTree(node, depth = 0, prefix = '') {
+      function flattenTree(node, depth = 0) {
         const items = [];
-        const dirs = Object.values(node.children).sort((a, b) =>
-          a.name.localeCompare(b.name)
-        );
+        const dirs = Object.values(node.children).sort((a, b) => a.name.localeCompare(b.name));
         const files = [...node.files].sort((a, b) => a.name.localeCompare(b.name));
-
         for (const dir of dirs) {
           items.push({ type: 'dir', node: dir, depth, key: dir.path });
-          items.push(...flattenTree(dir, depth + 1, dir.path));
+          items.push(...flattenTree(dir, depth + 1));
         }
         for (const file of files) {
           items.push({ type: 'file', node: file, depth, key: file.path });
@@ -831,9 +742,7 @@
 
       function TreeCheckbox({ checked, indeterminate, onChange }) {
         const ref = useRef();
-        useEffect(() => {
-          if (ref.current) ref.current.indeterminate = indeterminate;
-        }, [indeterminate]);
+        useEffect(() => { if (ref.current) ref.current.indeterminate = indeterminate; }, [indeterminate]);
         return (
           <input
             ref={ref}
@@ -846,56 +755,41 @@
         );
       }
 
-      function FileTree({ items, selected, collapsed, onToggleSelect, onToggleCollapse, extFilter, excludePatterns }) {
+      function FileTree({ items, selected, collapsed, onToggleSelect, onToggleCollapse }) {
         const visibleItems = useMemo(() => {
-          if (!collapsed) return items;
-          const hiddenPaths = new Set();
+          if (!collapsed || collapsed.size === 0) return items;
+          const hidden = new Set();
           for (const item of items) {
             if (item.type === 'dir' && collapsed.has(item.key)) {
               for (const other of items) {
                 if (other.key !== item.key && other.key.startsWith(item.key + '/')) {
-                  hiddenPaths.add(other.key);
+                  hidden.add(other.key);
                 }
               }
             }
           }
-          return items.filter(i => !hiddenPaths.has(i.key));
+          return items.filter(i => !hidden.has(i.key));
         }, [items, collapsed]);
 
         function getCheckState(item) {
-          if (item.type === 'file') {
-            return { checked: selected.has(item.key), indeterminate: false };
-          }
+          if (item.type === 'file') return { checked: selected.has(item.key), indeterminate: false };
           const prefix = item.key + '/';
-          const children = items.filter(i => i.key.startsWith(prefix));
+          const children = items.filter(i => i.type === 'file' && i.key.startsWith(prefix));
           if (children.length === 0) return { checked: false, indeterminate: false };
-          const sel = children.filter(i => selected.has(i.key) && i.type === 'file').length;
-          const total = children.filter(i => i.type === 'file').length;
+          const sel = children.filter(c => selected.has(c.key)).length;
           if (sel === 0) return { checked: false, indeterminate: false };
-          if (sel === total) return { checked: true, indeterminate: false };
+          if (sel === children.length) return { checked: true, indeterminate: false };
           return { checked: false, indeterminate: true };
         }
 
         function getFileIcon(name) {
-          const ext = getExt(name);
           const icons = {
-            js: '🟨', jsx: '⚛️', ts: '🔷', tsx: '⚛️', py: '🐍',
-            rb: '💎', go: '🐹', rs: '🦀', java: '☕', css: '🎨',
-            scss: '🎨', html: '🌐', json: '📋', yaml: '📋', yml: '📋',
-            md: '📝', sh: '📜', bash: '📜', sql: '🗃️', vue: '💚',
-            svelte: '🧡', php: '🐘', kt: '🟪', swift: '🍊',
+            js:'🟨',jsx:'⚛️',ts:'🔷',tsx:'⚛️',py:'🐍',rb:'💎',go:'🐹',rs:'🦀',
+            java:'☕',css:'🎨',scss:'🎨',html:'🌐',json:'📋',yaml:'📋',yml:'📋',
+            md:'📝',sh:'📜',bash:'📜',sql:'🗃️',vue:'💚',svelte:'🧡',php:'🐘',
+            kt:'🟪',swift:'🍊',
           };
-          return icons[ext] || '📄';
-        }
-
-        function isFiltered(item) {
-          if (extFilter.length === 0 && excludePatterns.length === 0) return false;
-          if (item.type === 'file') {
-            const ext = '.' + getExt(item.key);
-            if (extFilter.length > 0 && !extFilter.includes(ext)) return true;
-            if (excludePatterns.some(p => pathMatchesPattern(p, item.key))) return true;
-          }
-          return false;
+          return icons[getExt(name)] || '📄';
         }
 
         return (
@@ -904,38 +798,22 @@
               const { checked, indeterminate } = getCheckState(item);
               const isDir = item.type === 'dir';
               const isCol = isDir && collapsed && collapsed.has(item.key);
-              const filtered = isFiltered(item);
-
               return (
                 <div
                   key={item.key}
                   className={`tree-node ${checked ? 'selected' : ''}`}
-                  style={{
-                    paddingLeft: 8 + item.depth * 16,
-                    opacity: filtered ? 0.4 : 1,
-                  }}
-                  onClick={() => {
-                    if (isDir) onToggleCollapse(item.key);
-                    else onToggleSelect(item);
-                  }}
+                  style={{ paddingLeft: 8 + item.depth * 16 }}
+                  onClick={() => isDir ? onToggleCollapse(item.key) : onToggleSelect(item)}
                 >
                   <TreeCheckbox
                     checked={checked}
                     indeterminate={indeterminate}
-                    onChange={checked => onToggleSelect(item, checked)}
+                    onChange={v => onToggleSelect(item, v)}
                   />
-                  <span className="tree-node-toggle">
-                    {isDir ? (isCol ? '▶' : '▼') : ''}
-                  </span>
-                  <span className="tree-node-icon">
-                    {isDir ? (isCol ? '📁' : '📂') : getFileIcon(item.node.name || item.node.path)}
-                  </span>
-                  <span className="tree-node-name">
-                    {item.node.name}
-                  </span>
-                  {!isDir && (
-                    <span className="tree-node-ext">.{getExt(item.node.name)}</span>
-                  )}
+                  <span className="tree-node-toggle">{isDir ? (isCol ? '▶' : '▼') : ''}</span>
+                  <span className="tree-node-icon">{isDir ? (isCol ? '📁' : '📂') : getFileIcon(item.node.name)}</span>
+                  <span className="tree-node-name">{item.node.name}</span>
+                  {!isDir && <span className="tree-node-ext">.{getExt(item.node.name)}</span>}
                 </div>
               );
             })}
@@ -943,9 +821,26 @@
         );
       }
 
-      // ─── Main App ────────────────────────────────────────────────────────────────
+      function LangToggle({ lang, onChange }) {
+        return (
+          <div className="lang-toggle">
+            <button className={`lang-btn ${lang === 'es' ? 'active' : ''}`} onClick={() => onChange('es')}>ES</button>
+            <button className={`lang-btn ${lang === 'en' ? 'active' : ''}`} onClick={() => onChange('en')}>EN</button>
+          </div>
+        );
+      }
+
+      // ─── App ─────────────────────────────────────────────────────────────────────
 
       function App() {
+        const [lang, setLang] = useState(detectLang);
+        const t = LANGS[lang];
+
+        useEffect(() => {
+          document.title = `CodeDump — ${t.tagline}`;
+          document.documentElement.lang = lang;
+        }, [lang]);
+
         const [screen, setScreen] = useState('landing');
         const [sourceMode, setSourceMode] = useState('github');
 
@@ -963,7 +858,7 @@
         const [selected, setSelected] = useState(new Set());
         const [collapsed, setCollapsed] = useState(new Set());
 
-        const [extFilter, setExtFilterRaw] = useState('');
+        const [extFilter, setExtFilter] = useState('');
         const [excludeInput, setExcludeInput] = useState('');
 
         const [opts, setOpts] = useState({
@@ -975,8 +870,6 @@
           headerTemplate: DEFAULT_HEADER,
         });
         const [outputFmt, setOutputFmt] = useState('txt');
-
-        const [githubMeta, setGithubMeta] = useState(null);
 
         const fileInputRef = useRef();
 
@@ -990,106 +883,44 @@
           [excludeInput]
         );
 
-        function setOpt(key, val) {
-          setOpts(o => ({ ...o, [key]: val }));
-        }
-
-        function setStatus(msg, type = 'info') {
-          setStatusMsg(msg ? { msg, type } : null);
-        }
-
-        // Auto-apply exclude patterns
-        useEffect(() => {
-          if (treeItems.length === 0) return;
-          if (excludePatterns.length === 0) return;
-          setSelected(prev => {
-            const next = new Set(prev);
-            for (const item of treeItems) {
-              if (item.type === 'file' && excludePatterns.some(p => pathMatchesPattern(p, item.key))) {
-                next.delete(item.key);
-              }
-            }
-            return next;
-          });
-        }, [excludePatterns, treeItems]);
-
-        // Auto-apply ext filter deselection
-        useEffect(() => {
-          if (treeItems.length === 0) return;
-          if (extFilterList.length === 0) return;
-          setSelected(prev => {
-            const next = new Set(prev);
-            for (const item of treeItems) {
-              if (item.type === 'file') {
-                const ext = '.' + getExt(item.key);
-                if (!extFilterList.includes(ext)) next.delete(item.key);
-              }
-            }
-            return next;
-          });
-        }, [extFilterList, treeItems]);
+        function setOpt(key, val) { setOpts(o => ({ ...o, [key]: val })); }
+        function setStatus(msg, type = 'info') { setStatusMsg(msg ? { msg, type } : null); }
 
         function loadFiles(paths, contents) {
-          const filtered = paths.filter(p => {
+          const valid = paths.filter(p => {
             const parts = p.split('/');
             return !parts.some(pt => ALWAYS_EXCLUDE.includes(pt)) && !isBinary(p);
           });
-
-          const tree = buildTree(filtered);
-          const items = flattenTree(tree);
-
-          setTreeItems(items);
+          setTreeItems(flattenTree(buildTree(valid)));
           setFileContents(contents);
-          setSelected(new Set(filtered));
+          setSelected(new Set(valid));
           setCollapsed(new Set());
           setScreen('editor');
         }
 
         async function handleGitHubLoad() {
           const parsed = parseGitHubUrl(githubUrl);
-          if (!parsed) {
-            setStatus('Invalid GitHub URL. Expected: https://github.com/owner/repo', 'error');
-            return;
-          }
-
-          setLoading(true);
-          setLoadProgress(10);
-          setStatus(null);
-
+          if (!parsed) { setStatus(t.errInvalidUrl, 'error'); return; }
+          setLoading(true); setLoadProgress(10); setStatus(null);
           try {
             const meta = await fetchGitHubTree(parsed.owner, parsed.repo, githubToken || null);
-            setGithubMeta(meta);
             setLoadProgress(30);
-
-            const paths = meta.files
-              .filter(f => !isBinary(f.path) && f.size < 500000)
-              .map(f => f.path);
-
-            setLoadProgress(40);
-
-            // Fetch contents in batches
+            const paths = meta.files.filter(f => !isBinary(f.path) && f.size < 500000).map(f => f.path);
             const contents = {};
             const batchSize = 5;
             for (let i = 0; i < paths.length; i += batchSize) {
-              const batch = paths.slice(i, i + batchSize);
-              await Promise.all(batch.map(async path => {
+              await Promise.all(paths.slice(i, i + batchSize).map(async path => {
                 try {
-                  const content = await fetchGitHubFileContent(
-                    meta.owner, meta.repo, path, meta.branch, meta.headers
-                  );
-                  contents[path] = content;
-                } catch {
-                  // skip files that can't be fetched
-                }
+                  contents[path] = await fetchFileContent(meta.owner, meta.repo, path, meta.branch, meta.headers);
+                } catch {}
               }));
               setLoadProgress(40 + Math.round((i / paths.length) * 55));
             }
-
             setLoadProgress(100);
             loadFiles(Object.keys(contents), contents);
-            setStatus(`Loaded ${Object.keys(contents).length} files from ${parsed.owner}/${parsed.repo}`, 'success');
+            setStatus(t.filesLoaded(Object.keys(contents).length, `${parsed.owner}/${parsed.repo}`), 'success');
           } catch (err) {
-            setStatus(err.message || 'Failed to load repository', 'error');
+            setStatus(err.message || t.errLoad, 'error');
           } finally {
             setLoading(false);
           }
@@ -1097,41 +928,31 @@
 
         async function handleZipLoad(file) {
           if (!file) return;
-
-          const isLocal = file.type === 'application/x-zip-compressed' || file.name.endsWith('.zip');
           if (file.size > ZIP_LIMIT) {
-            setStatus(`File exceeds 15 MB limit (${(file.size / 1024 / 1024).toFixed(1)} MB)`, 'error');
+            setStatus(t.errZipSize((file.size / 1024 / 1024).toFixed(1)), 'error');
             return;
           }
-
-          setLoading(true);
-          setLoadProgress(10);
-          setStatus(null);
-
+          setLoading(true); setLoadProgress(10); setStatus(null);
           try {
             const entries = await processZip(file);
             setLoadProgress(80);
-
-            // Strip common top-level folder
-            const paths = entries.map(e => e.path);
-            const topDirs = new Set(paths.map(p => p.split('/')[0]));
+            const rawPaths = entries.map(e => e.path);
+            const topDirs = new Set(rawPaths.map(p => p.split('/')[0]));
             let stripPrefix = '';
             if (topDirs.size === 1) {
               const top = [...topDirs][0];
-              if (paths.every(p => p.startsWith(top + '/'))) stripPrefix = top + '/';
+              if (rawPaths.every(p => p.startsWith(top + '/'))) stripPrefix = top + '/';
             }
-
             const contents = {};
             for (const { path, content } of entries) {
-              const cleanPath = stripPrefix ? path.slice(stripPrefix.length) : path;
-              if (cleanPath) contents[cleanPath] = content;
+              const clean = stripPrefix ? path.slice(stripPrefix.length) : path;
+              if (clean) contents[clean] = content;
             }
-
             setLoadProgress(100);
             loadFiles(Object.keys(contents), contents);
-            setStatus(`Loaded ${Object.keys(contents).length} files from ${file.name}`, 'success');
+            setStatus(t.filesLoaded(Object.keys(contents).length, file.name), 'success');
           } catch (err) {
-            setStatus(err.message || 'Failed to process ZIP', 'error');
+            setStatus(err.message || t.errZip, 'error');
           } finally {
             setLoading(false);
           }
@@ -1142,17 +963,13 @@
             const next = new Set(prev);
             if (item.type === 'file') {
               const v = forceVal !== undefined ? forceVal : !prev.has(item.key);
-              if (v) next.add(item.key);
-              else next.delete(item.key);
+              v ? next.add(item.key) : next.delete(item.key);
             } else {
               const prefix = item.key + '/';
               const children = treeItems.filter(i => i.type === 'file' && i.key.startsWith(prefix));
               const allSel = children.every(c => prev.has(c.key));
               const v = forceVal !== undefined ? forceVal : !allSel;
-              for (const c of children) {
-                if (v) next.add(c.key);
-                else next.delete(c.key);
-              }
+              for (const c of children) { v ? next.add(c.key) : next.delete(c.key); }
             }
             return next;
           });
@@ -1161,61 +978,41 @@
         function handleToggleCollapse(key) {
           setCollapsed(prev => {
             const next = new Set(prev);
-            if (next.has(key)) next.delete(key);
-            else next.add(key);
+            next.has(key) ? next.delete(key) : next.add(key);
             return next;
           });
         }
 
         function selectAll() {
-          const files = treeItems.filter(i => i.type === 'file').map(i => i.key);
-          setSelected(new Set(files));
+          setSelected(new Set(treeItems.filter(i => i.type === 'file').map(i => i.key)));
         }
 
-        function deselectAll() {
-          setSelected(new Set());
-        }
+        function deselectAll() { setSelected(new Set()); }
 
         function generateOutput() {
-          const selectedFiles = treeItems
+          const toExport = treeItems
             .filter(i => i.type === 'file' && selected.has(i.key))
             .map(i => i.key)
             .sort();
 
-          const parts = [];
-
-          for (const filepath of selectedFiles) {
+          const parts = toExport.map(filepath => {
             const content = fileContents[filepath];
-            if (content === undefined) continue;
-
+            if (content === undefined) return null;
             const filename = filepath.split('/').pop();
             const ext = getExt(filename);
             const lang = inferLang(filename);
-
-            let processed = processContent(content, ext, opts);
+            const processed = processContent(content, ext, opts);
 
             if (opts.addHeader) {
-              const header = buildHeaderTemplate(opts.headerTemplate || DEFAULT_HEADER, {
-                filename,
-                filepath,
-                extension: ext,
-              });
-              if (outputFmt === 'md') {
-                parts.push(`${header}\n\n\`\`\`${lang}\n${processed}\n\`\`\``);
-              } else {
-                parts.push(`${header}\n${processed}`);
-              }
-            } else {
-              if (outputFmt === 'md') {
-                parts.push(`\`\`\`${lang}\n${processed}\n\`\`\``);
-              } else {
-                parts.push(processed);
-              }
+              const header = buildHeader(opts.headerTemplate || DEFAULT_HEADER, { filename, filepath, extension: ext });
+              return outputFmt === 'md'
+                ? `${header}\n\n\`\`\`${lang}\n${processed}\n\`\`\``
+                : `${header}\n${processed}`;
             }
-          }
+            return outputFmt === 'md' ? `\`\`\`${lang}\n${processed}\n\`\`\`` : processed;
+          }).filter(Boolean);
 
-          const output = parts.join('\n\n');
-          const blob = new Blob([output], { type: 'text/plain;charset=utf-8' });
+          const blob = new Blob([parts.join('\n\n')], { type: 'text/plain;charset=utf-8' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
@@ -1233,33 +1030,31 @@
           [treeItems]
         );
 
-        // ── Render ──────────────────────────────────────────────────────────────
+        // ── Landing ─────────────────────────────────────────────────────────────
 
         if (screen === 'landing') {
           return (
             <div className="layout">
               <div className="topbar">
-                <div className="topbar-logo">
-                  Code<span>Dump</span>
-                </div>
+                <div className="topbar-logo">Code<span>Dump</span></div>
                 <div className="topbar-sep" />
-                <div className="topbar-desc">Consolidate any repo into a single file</div>
+                <LangToggle lang={lang} onChange={setLang} />
               </div>
               <div className="landing">
                 <div className="landing-hero">
-                  <h1>Export your repo as one <span>file</span></h1>
-                  <p>Pick a source, select what to include, configure the format, and download.</p>
+                  <h1>{t.landingH1a} <span>{t.landingH1b}</span></h1>
+                  <p>{t.landingSubtitle}</p>
                 </div>
                 <div className="landing-cards">
                   <div className="source-card" onClick={() => { setSourceMode('github'); setScreen('source'); }}>
                     <div className="source-card-icon">🐙</div>
-                    <h3>GitHub Repository</h3>
-                    <p>Load any public repo without authentication, or use a Personal Access Token for private repos.</p>
+                    <h3>{t.cardGithubTitle}</h3>
+                    <p>{t.cardGithubDesc}</p>
                   </div>
                   <div className="source-card" onClick={() => { setSourceMode('zip'); setScreen('source'); }}>
                     <div className="source-card-icon">📦</div>
-                    <h3>Upload ZIP</h3>
-                    <p>Extract and process a local ZIP archive directly in your browser. No upload, no server.</p>
+                    <h3>{t.cardZipTitle}</h3>
+                    <p>{t.cardZipDesc}</p>
                   </div>
                 </div>
               </div>
@@ -1267,30 +1062,25 @@
           );
         }
 
+        // ── Source config ────────────────────────────────────────────────────────
+
         if (screen === 'source') {
           return (
             <div className="layout">
               <div className="topbar">
                 <div className="topbar-logo">Code<span>Dump</span></div>
                 <div className="topbar-sep" />
-                <button className="btn-ghost" onClick={() => { setScreen('landing'); setStatus(null); }}>
-                  Back
-                </button>
+                <LangToggle lang={lang} onChange={setLang} />
+                <button className="btn-ghost" onClick={() => { setScreen('landing'); setStatus(null); }}>{t.back}</button>
               </div>
               <div className="main" style={{ alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 24, padding: 40 }}>
                 <div style={{ width: '100%', maxWidth: 460 }}>
-                  <div className="source-tabs" style={{ borderRadius: `${8}px ${8}px 0 0` }}>
-                    <button
-                      className={`source-tab ${sourceMode === 'github' ? 'active' : ''}`}
-                      onClick={() => setSourceMode('github')}
-                    >
-                      🐙 GitHub
+                  <div className="source-tabs" style={{ borderRadius: '8px 8px 0 0' }}>
+                    <button className={`source-tab ${sourceMode === 'github' ? 'active' : ''}`} onClick={() => setSourceMode('github')}>
+                      🐙 {t.tabGithub}
                     </button>
-                    <button
-                      className={`source-tab ${sourceMode === 'zip' ? 'active' : ''}`}
-                      onClick={() => setSourceMode('zip')}
-                    >
-                      📦 ZIP File
+                    <button className={`source-tab ${sourceMode === 'zip' ? 'active' : ''}`} onClick={() => setSourceMode('zip')}>
+                      📦 {t.tabZip}
                     </button>
                   </div>
 
@@ -1298,29 +1088,29 @@
                     {sourceMode === 'github' && (
                       <>
                         <div className="field">
-                          <label className="field-label">Repository URL</label>
+                          <label className="field-label">{t.labelRepoUrl}</label>
                           <input
                             type="url"
-                            placeholder="https://github.com/owner/repo"
+                            placeholder={t.placeholderUrl}
                             value={githubUrl}
                             onChange={e => setGithubUrl(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && handleGitHubLoad()}
                           />
                         </div>
                         <div className="field">
-                          <label className="field-label">Personal Access Token <span style={{ color: 'var(--text-dim)', fontWeight: 400 }}>(optional, for private repos)</span></label>
+                          <label className="field-label">
+                            {t.labelToken} <span style={{ color: 'var(--text-dim)', fontWeight: 400 }}>{t.labelTokenOpt}</span>
+                          </label>
                           <input
                             type="password"
-                            placeholder="ghp_..."
+                            placeholder={t.placeholderToken}
                             value={githubToken}
                             onChange={e => setGithubToken(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && handleGitHubLoad()}
                           />
-                          <div className="field-hint">Token is never logged or stored anywhere.</div>
+                          <div className="field-hint">{t.hintToken}</div>
                         </div>
-                        {statusMsg && (
-                          <div className={`status-msg ${statusMsg.type}`}>{statusMsg.msg}</div>
-                        )}
+                        {statusMsg && <div className={`status-msg ${statusMsg.type}`}>{statusMsg.msg}</div>}
                         {loading && (
                           <div className="progress-bar-wrap">
                             <div className="progress-bar" style={{ width: `${loadProgress}%` }} />
@@ -1332,7 +1122,7 @@
                           onClick={handleGitHubLoad}
                           disabled={loading || !githubUrl.trim()}
                         >
-                          {loading ? <><span className="spinner" /> Loading...</> : 'Load Repository'}
+                          {loading ? <><span className="spinner" /> {t.btnLoading}</> : t.btnLoad}
                         </button>
                       </>
                     )}
@@ -1353,9 +1143,9 @@
                         >
                           <div className="dropzone-icon">📂</div>
                           <div className="dropzone-text">
-                            <strong>Click to browse</strong> or drag & drop a ZIP file
+                            <strong>{t.dropzoneStrong}</strong> {t.dropzoneOr}
                           </div>
-                          <div className="dropzone-limit">Max 15 MB</div>
+                          <div className="dropzone-limit">{t.dropzoneLimit}</div>
                           <input
                             ref={fileInputRef}
                             type="file"
@@ -1372,9 +1162,7 @@
                             {zipFile.name} ({(zipFile.size / 1024).toFixed(0)} KB)
                           </div>
                         )}
-                        {statusMsg && (
-                          <div className={`status-msg ${statusMsg.type}`}>{statusMsg.msg}</div>
-                        )}
+                        {statusMsg && <div className={`status-msg ${statusMsg.type}`}>{statusMsg.msg}</div>}
                         {loading && (
                           <div className="progress-bar-wrap">
                             <div className="progress-bar" style={{ width: `${loadProgress}%` }} />
@@ -1389,45 +1177,39 @@
           );
         }
 
-        // Editor screen
+        // ── Editor ───────────────────────────────────────────────────────────────
+
         return (
           <div className="layout">
             <div className="topbar">
               <div className="topbar-logo">Code<span>Dump</span></div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 8 }}>
-                <span className="badge badge-blue">{selectedCount} / {totalFileCount} files</span>
-                {statusMsg && statusMsg.type === 'success' && (
-                  <span className="badge badge-green">{statusMsg.msg.split(' ').slice(0, 3).join(' ')}</span>
-                )}
+                <span className="badge badge-blue">{selectedCount} / {totalFileCount}</span>
               </div>
               <div className="topbar-sep" />
-              <button className="btn-ghost" onClick={() => { setScreen('source'); setStatus(null); }}>
-                Change source
-              </button>
-              <button className="btn-ghost" onClick={() => { setScreen('landing'); setStatus(null); }}>
-                Home
-              </button>
+              <LangToggle lang={lang} onChange={setLang} />
+              <button className="btn-ghost" onClick={() => { setScreen('source'); setStatus(null); }}>{t.changeSource}</button>
+              <button className="btn-ghost" onClick={() => { setScreen('landing'); setStatus(null); }}>{t.home}</button>
             </div>
 
             <div className="main">
-              {/* File tree */}
               <div className="file-tree-area">
                 <div className="file-tree-toolbar">
                   <div className="file-tree-toolbar-row">
                     <input
                       type="text"
-                      placeholder="Filter by extension: .js, .ts, .jsx"
+                      placeholder={t.placeholderExtFilter}
                       value={extFilter}
-                      onChange={e => setExtFilterRaw(e.target.value)}
+                      onChange={e => setExtFilter(e.target.value)}
                       style={{ flex: 1 }}
                     />
-                    <button className="btn-ghost" onClick={selectAll}>All</button>
-                    <button className="btn-ghost" onClick={deselectAll}>None</button>
+                    <button className="btn-ghost" onClick={selectAll}>{t.btnAll}</button>
+                    <button className="btn-ghost" onClick={deselectAll}>{t.btnNone}</button>
                   </div>
                   <div className="file-tree-toolbar-row">
                     <input
                       type="text"
-                      placeholder="Exclude patterns: node_modules, *.test.js, dist"
+                      placeholder={t.placeholderExclude}
                       value={excludeInput}
                       onChange={e => setExcludeInput(e.target.value)}
                     />
@@ -1440,27 +1222,19 @@
                   collapsed={collapsed}
                   onToggleSelect={handleToggleSelect}
                   onToggleCollapse={handleToggleCollapse}
-                  extFilter={extFilterList}
-                  excludePatterns={excludePatterns}
                 />
 
                 <div className="tree-stats">
-                  <span>{selectedCount} files selected</span>
-                  <span>{totalFileCount} total</span>
-                  <span>{treeItems.filter(i => i.type === 'dir').length} folders</span>
+                  <span>{selectedCount} {t.statsSelected}</span>
+                  <span>{totalFileCount} {t.statsTotal}</span>
+                  <span>{treeItems.filter(i => i.type === 'dir').length} {t.statsFolders}</span>
                 </div>
               </div>
 
-              {/* Format options */}
               <div className="format-panel">
                 <div className="panel-section">
-                  <div className="panel-label">Format Options</div>
-                  <ToggleRow
-                    title="Add file headers"
-                    desc="Insert a separator line before each file"
-                    checked={opts.addHeader}
-                    onChange={v => setOpt('addHeader', v)}
-                  >
+                  <div className="panel-label">{t.panelFormat}</div>
+                  <ToggleRow title={t.toggleHeader} desc={t.toggleHeaderDesc} checked={opts.addHeader} onChange={v => setOpt('addHeader', v)}>
                     {opts.addHeader && (
                       <input
                         type="text"
@@ -1471,64 +1245,30 @@
                       />
                     )}
                   </ToggleRow>
-                  <ToggleRow
-                    title="Strip blank lines"
-                    desc="Remove lines that contain only whitespace"
-                    checked={opts.stripBlankLines}
-                    onChange={v => setOpt('stripBlankLines', v)}
-                  />
-                  <ToggleRow
-                    title="Strip comments"
-                    desc="Remove // # /* */ <!-- --> based on file type"
-                    checked={opts.stripComments}
-                    onChange={v => setOpt('stripComments', v)}
-                  />
-                  <ToggleRow
-                    title="Strip indentation"
-                    desc="Remove leading whitespace from every line"
-                    checked={opts.stripIndentation}
-                    onChange={v => setOpt('stripIndentation', v)}
-                  />
-                  <ToggleRow
-                    title="Strip line breaks"
-                    desc="Collapse all content to a single line"
-                    checked={opts.stripLineBreaks}
-                    onChange={v => setOpt('stripLineBreaks', v)}
-                  />
+                  <ToggleRow title={t.toggleBlankLines} desc={t.toggleBlankLinesDesc} checked={opts.stripBlankLines} onChange={v => setOpt('stripBlankLines', v)} />
+                  <ToggleRow title={t.toggleComments} desc={t.toggleCommentsDesc} checked={opts.stripComments} onChange={v => setOpt('stripComments', v)} />
+                  <ToggleRow title={t.toggleIndent} desc={t.toggleIndentDesc} checked={opts.stripIndentation} onChange={v => setOpt('stripIndentation', v)} />
+                  <ToggleRow title={t.toggleLineBreaks} desc={t.toggleLineBreaksDesc} checked={opts.stripLineBreaks} onChange={v => setOpt('stripLineBreaks', v)} />
                 </div>
 
                 <div className="panel-section">
-                  <div className="panel-label">Output Format</div>
+                  <div className="panel-label">{t.panelOutput}</div>
                   <div className="output-row" style={{ marginBottom: 12 }}>
-                    <button
-                      className={`output-btn ${outputFmt === 'txt' ? 'active' : ''}`}
-                      onClick={() => setOutputFmt('txt')}
-                    >.txt</button>
-                    <button
-                      className={`output-btn ${outputFmt === 'md' ? 'active' : ''}`}
-                      onClick={() => setOutputFmt('md')}
-                    >.md</button>
+                    <button className={`output-btn ${outputFmt === 'txt' ? 'active' : ''}`} onClick={() => setOutputFmt('txt')}>.txt</button>
+                    <button className={`output-btn ${outputFmt === 'md' ? 'active' : ''}`} onClick={() => setOutputFmt('md')}>.md</button>
                   </div>
-                  <button
-                    className="btn-primary generate-btn"
-                    onClick={generateOutput}
-                    disabled={selectedCount === 0}
-                  >
-                    Download {selectedCount > 0 ? `(${selectedCount} files)` : ''}
+                  <button className="btn-primary generate-btn" onClick={generateOutput} disabled={selectedCount === 0}>
+                    {t.btnDownload} {selectedCount > 0 ? `(${selectedCount})` : ''}
                   </button>
                   {selectedCount === 0 && (
-                    <div className="field-hint" style={{ marginTop: 6, textAlign: 'center' }}>
-                      Select at least one file to export.
-                    </div>
+                    <div className="field-hint" style={{ marginTop: 6, textAlign: 'center' }}>{t.hintNoFiles}</div>
                   )}
                 </div>
 
                 <div className="panel-section">
-                  <div className="panel-label">Variables for header</div>
+                  <div className="panel-label">{t.panelVars}</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                    {['{filename}', '{filepath}', '{extension}'].map(v => (
-                      <span key={v} className="tag">{v}</span>
-                    ))}
+                    {['{filename}', '{filepath}', '{extension}'].map(v => <span key={v} className="tag">{v}</span>)}
                   </div>
                 </div>
               </div>
