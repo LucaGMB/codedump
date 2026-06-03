@@ -883,6 +883,23 @@
           [excludeInput]
         );
 
+        // Derived selection: user intent (selected) minus anything blocked by active filters.
+        // Filters never mutate selected — they only restrict what's visible and exported.
+        const effectiveSelected = useMemo(() => {
+          const result = new Set();
+          for (const item of treeItems) {
+            if (item.type !== 'file') continue;
+            if (!selected.has(item.key)) continue;
+            if (extFilterList.length > 0) {
+              const ext = '.' + getExt(item.key);
+              if (!extFilterList.includes(ext)) continue;
+            }
+            if (excludePatterns.some(p => pathMatchesPattern(p, item.key))) continue;
+            result.add(item.key);
+          }
+          return result;
+        }, [selected, treeItems, extFilterList, excludePatterns]);
+
         function setOpt(key, val) { setOpts(o => ({ ...o, [key]: val })); }
         function setStatus(msg, type = 'info') { setStatusMsg(msg ? { msg, type } : null); }
 
@@ -967,8 +984,9 @@
             } else {
               const prefix = item.key + '/';
               const children = treeItems.filter(i => i.type === 'file' && i.key.startsWith(prefix));
-              const allSel = children.every(c => prev.has(c.key));
-              const v = forceVal !== undefined ? forceVal : !allSel;
+              // Determine toggle direction from effectiveSelected so the visual state drives intent.
+              const allEffSel = children.length > 0 && children.every(c => effectiveSelected.has(c.key));
+              const v = forceVal !== undefined ? forceVal : !allEffSel;
               for (const c of children) { v ? next.add(c.key) : next.delete(c.key); }
             }
             return next;
@@ -991,7 +1009,7 @@
 
         function generateOutput() {
           const toExport = treeItems
-            .filter(i => i.type === 'file' && selected.has(i.key))
+            .filter(i => i.type === 'file' && effectiveSelected.has(i.key))
             .map(i => i.key)
             .sort();
 
@@ -1022,8 +1040,8 @@
         }
 
         const selectedCount = useMemo(() =>
-          treeItems.filter(i => i.type === 'file' && selected.has(i.key)).length,
-          [treeItems, selected]
+          effectiveSelected.size,
+          [effectiveSelected]
         );
         const totalFileCount = useMemo(() =>
           treeItems.filter(i => i.type === 'file').length,
@@ -1218,7 +1236,7 @@
 
                 <FileTree
                   items={treeItems}
-                  selected={selected}
+                  selected={effectiveSelected}
                   collapsed={collapsed}
                   onToggleSelect={handleToggleSelect}
                   onToggleCollapse={handleToggleCollapse}
