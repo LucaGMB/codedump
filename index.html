@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CodeDump</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231e232b'/%3E%3Cpath d='M11 11L6 16l5 5' stroke='%234f8ef7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M21 11l5 5-5 5' stroke='%234f8ef7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M19 10L13 22' stroke='%234f8ef7' stroke-width='2.5' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -821,6 +822,34 @@
         );
       }
 
+      function Logo({ size = 32 }) {
+        return (
+          <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+            <rect width="32" height="32" rx="7" fill="#1e232b"/>
+            <path d="M11 11L6 16l5 5" stroke="#4f8ef7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M21 11l5 5-5 5" stroke="#4f8ef7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M19 10L13 22" stroke="#4f8ef7" strokeWidth="2.5" strokeLinecap="round"/>
+          </svg>
+        );
+      }
+
+      function GitHubLink() {
+        return (
+          <a
+            href="https://github.com/LucaGMB/codedump"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-ghost"
+            style={{ display: 'flex', alignItems: 'center', gap: 5, textDecoration: 'none', borderRadius: 'var(--radius-sm)' }}
+          >
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            GitHub
+          </a>
+        );
+      }
+
       function LangToggle({ lang, onChange }) {
         return (
           <div className="lang-toggle">
@@ -837,7 +866,6 @@
         const t = LANGS[lang];
 
         useEffect(() => {
-          document.title = `CodeDump — ${t.tagline}`;
           document.documentElement.lang = lang;
         }, [lang]);
 
@@ -1054,12 +1082,14 @@
           return (
             <div className="layout">
               <div className="topbar">
-                <div className="topbar-logo">Code<span>Dump</span></div>
+                <div className="topbar-logo"><Logo size={22} />Code<span>Dump</span></div>
                 <div className="topbar-sep" />
+                <GitHubLink />
                 <LangToggle lang={lang} onChange={setLang} />
               </div>
               <div className="landing">
                 <div className="landing-hero">
+                  <div style={{ marginBottom: 22 }}><Logo size={64} /></div>
                   <h1>{t.landingH1a} <span>{t.landingH1b}</span></h1>
                   <p>{t.landingSubtitle}</p>
                 </div>
@@ -1086,8 +1116,9 @@
           return (
             <div className="layout">
               <div className="topbar">
-                <div className="topbar-logo">Code<span>Dump</span></div>
+                <div className="topbar-logo"><Logo size={22} />Code<span>Dump</span></div>
                 <div className="topbar-sep" />
+                <GitHubLink />
                 <LangToggle lang={lang} onChange={setLang} />
                 <button className="btn-ghost" onClick={() => { setScreen('landing'); setStatus(null); }}>{t.back}</button>
               </div>
@@ -1200,11 +1231,12 @@
         return (
           <div className="layout">
             <div className="topbar">
-              <div className="topbar-logo">Code<span>Dump</span></div>
+              <div className="topbar-logo"><Logo size={22} />Code<span>Dump</span></div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 8 }}>
                 <span className="badge badge-blue">{selectedCount} / {totalFileCount}</span>
               </div>
               <div className="topbar-sep" />
+              <GitHubLink />
               <LangToggle lang={lang} onChange={setLang} />
               <button className="btn-ghost" onClick={() => { setScreen('source'); setStatus(null); }}>{t.changeSource}</button>
               <button className="btn-ghost" onClick={() => { setScreen('landing'); setStatus(null); }}>{t.home}</button>
