@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeDump — Consolidate any repo into a single file</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: #0d0f12;
+        --surface: #161a20;
+        --surface2: #1e232b;
+        --border: #2a3040;
+        --border2: #343d4d;
+        --text: #e2e8f0;
+        --text-muted: #8892a4;
+        --text-dim: #5a6478;
+        --accent: #4f8ef7;
+        --accent-hover: #6ba3ff;
+        --accent-dim: #1e3a6e;
+        --green: #3ecf8e;
+        --green-dim: #0f3d2a;
+        --red: #f56565;
+        --yellow: #f6c90e;
+        --radius: 8px;
+        --radius-sm: 5px;
+        --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        --mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      }
+
+      html, body, #root {
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 14px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+      input, textarea, select {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        border-radius: var(--radius-sm);
+        font-family: var(--font);
+        font-size: 13px;
+        padding: 7px 10px;
+        outline: none;
+        transition: border-color 0.15s;
+        width: 100%;
+      }
+      input:focus, textarea:focus {
+        border-color: var(--accent);
+      }
+      input[type="checkbox"] {
+        width: auto;
+        accent-color: var(--accent);
+        cursor: pointer;
+      }
+
+      button {
+        cursor: pointer;
+        font-family: var(--font);
+        font-size: 13px;
+        border: none;
+        border-radius: var(--radius-sm);
+        padding: 7px 14px;
+        transition: background 0.15s, opacity 0.15s;
+      }
+      button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+      }
+      .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+
+      .btn-secondary {
+        background: var(--surface2);
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+      .btn-secondary:hover:not(:disabled) { border-color: var(--border2); background: var(--border); }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-muted);
+        padding: 4px 8px;
+        font-size: 12px;
+      }
+      .btn-ghost:hover:not(:disabled) { color: var(--text); background: var(--surface2); }
+
+      .btn-danger {
+        background: #3d1515;
+        color: var(--red);
+        border: 1px solid #5a2020;
+      }
+      .btn-danger:hover:not(:disabled) { background: #4d1a1a; }
+
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 7px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+      .badge-blue { background: var(--accent-dim); color: var(--accent); }
+      .badge-green { background: var(--green-dim); color: var(--green); }
+
+      .tag {
+        display: inline-block;
+        padding: 1px 6px;
+        border-radius: 3px;
+        font-family: var(--mono);
+        font-size: 11px;
+        background: var(--surface2);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+      }
+
+      .divider {
+        height: 1px;
+        background: var(--border);
+        margin: 0;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-rows: 56px 1fr;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 20px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+        flex-shrink: 0;
+      }
+      .topbar-logo {
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: -0.02em;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .topbar-logo span { color: var(--accent); }
+      .topbar-sep { flex: 1; }
+      .topbar-desc {
+        font-size: 12px;
+        color: var(--text-dim);
+      }
+
+      .main {
+        display: flex;
+        overflow: hidden;
+      }
+
+      /* Landing */
+      .landing {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        width: 100%;
+        gap: 40px;
+        padding: 40px;
+      }
+      .landing-hero {
+        text-align: center;
+      }
+      .landing-hero h1 {
+        font-size: 36px;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        color: var(--text);
+        margin-bottom: 10px;
+      }
+      .landing-hero h1 span { color: var(--accent); }
+      .landing-hero p {
+        font-size: 16px;
+        color: var(--text-muted);
+        max-width: 480px;
+        margin: 0 auto;
+        line-height: 1.6;
+      }
+      .landing-cards {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .source-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 28px 32px;
+        width: 340px;
+        cursor: pointer;
+        transition: border-color 0.15s, background 0.15s, transform 0.1s;
+      }
+      .source-card:hover {
+        border-color: var(--accent);
+        background: var(--surface2);
+        transform: translateY(-2px);
+      }
+      .source-card-icon {
+        font-size: 32px;
+        margin-bottom: 14px;
+      }
+      .source-card h3 {
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        letter-spacing: -0.02em;
+      }
+      .source-card p {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.55;
+      }
+
+      /* Source config panel */
+      .source-panel {
+        width: 420px;
+        flex-shrink: 0;
+        border-right: 1px solid var(--border);
+        background: var(--surface);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+      }
+      .panel-section {
+        padding: 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .panel-section:last-child { border-bottom: none; }
+      .panel-label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+        margin-bottom: 10px;
+      }
+
+      .field { margin-bottom: 10px; }
+      .field-label {
+        display: block;
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 5px;
+        font-weight: 500;
+      }
+      .field-hint {
+        font-size: 11px;
+        color: var(--text-dim);
+        margin-top: 4px;
+      }
+
+      .source-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+      }
+      .source-tab {
+        flex: 1;
+        padding: 14px 0;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: color 0.15s, border-color 0.15s;
+        background: transparent;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+      }
+      .source-tab.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+      }
+      .source-tab:hover:not(.active) { color: var(--text); }
+
+      /* Drop zone */
+      .dropzone {
+        border: 2px dashed var(--border);
+        border-radius: var(--radius);
+        padding: 32px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.15s, background 0.15s;
+        background: var(--surface2);
+      }
+      .dropzone:hover, .dropzone.drag-over {
+        border-color: var(--accent);
+        background: var(--accent-dim);
+      }
+      .dropzone-icon { font-size: 28px; margin-bottom: 10px; }
+      .dropzone-text { color: var(--text-muted); font-size: 13px; }
+      .dropzone-text strong { color: var(--text); }
+      .dropzone-limit { font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+
+      /* File tree */
+      .file-tree-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .file-tree-toolbar {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+      .file-tree-toolbar-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .file-tree-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 6px 0;
+      }
+      .tree-node {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        user-select: none;
+        font-size: 13px;
+        color: var(--text-muted);
+        transition: background 0.08s, color 0.08s;
+        white-space: nowrap;
+      }
+      .tree-node:hover { background: var(--surface2); color: var(--text); }
+      .tree-node.selected { color: var(--text); }
+      .tree-node-checkbox { flex-shrink: 0; }
+      .tree-node-toggle {
+        width: 14px;
+        flex-shrink: 0;
+        color: var(--text-dim);
+        font-size: 10px;
+        text-align: center;
+      }
+      .tree-node-icon { flex-shrink: 0; font-size: 13px; }
+      .tree-node-name { overflow: hidden; text-overflow: ellipsis; flex: 1; }
+      .tree-node-ext { color: var(--text-dim); font-size: 11px; flex-shrink: 0; }
+
+      .tree-stats {
+        padding: 8px 14px;
+        border-top: 1px solid var(--border);
+        font-size: 12px;
+        color: var(--text-dim);
+        display: flex;
+        gap: 14px;
+        flex-shrink: 0;
+        background: var(--surface);
+      }
+
+      /* Format options */
+      .format-panel {
+        width: 300px;
+        flex-shrink: 0;
+        border-left: 1px solid var(--border);
+        background: var(--surface);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+      }
+
+      .toggle-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .toggle-row:last-child { border-bottom: none; }
+      .toggle-info { flex: 1; }
+      .toggle-info-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+      .toggle-info-desc { font-size: 11px; color: var(--text-dim); }
+
+      .switch {
+        position: relative;
+        width: 34px;
+        height: 18px;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+      .switch input { opacity: 0; width: 0; height: 0; }
+      .switch-track {
+        position: absolute;
+        inset: 0;
+        background: var(--border2);
+        border-radius: 99px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .switch input:checked + .switch-track { background: var(--accent); }
+      .switch-thumb {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: #fff;
+        border-radius: 50%;
+        top: 3px;
+        left: 3px;
+        transition: transform 0.2s;
+        pointer-events: none;
+      }
+      .switch input:checked ~ .switch-thumb { transform: translateX(16px); }
+
+      .output-row {
+        display: flex;
+        gap: 6px;
+      }
+      .output-btn {
+        flex: 1;
+        padding: 8px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-muted);
+        font-size: 13px;
+        font-weight: 500;
+        font-family: var(--mono);
+        transition: border-color 0.15s, color 0.15s, background 0.15s;
+        cursor: pointer;
+      }
+      .output-btn.active {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--accent-dim);
+      }
+      .output-btn:hover:not(.active) { border-color: var(--border2); color: var(--text); }
+
+      .generate-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 14px;
+        font-weight: 700;
+        border-radius: var(--radius);
+        letter-spacing: -0.01em;
+      }
+
+      /* Progress / status */
+      .progress-bar-wrap {
+        height: 3px;
+        background: var(--border);
+        border-radius: 99px;
+        overflow: hidden;
+        margin-top: 6px;
+      }
+      .progress-bar {
+        height: 100%;
+        background: var(--accent);
+        border-radius: 99px;
+        transition: width 0.3s;
+      }
+
+      .status-msg {
+        font-size: 12px;
+        padding: 8px 10px;
+        border-radius: var(--radius-sm);
+        margin-top: 8px;
+      }
+      .status-msg.error { background: #2d1010; color: var(--red); border: 1px solid #4a1a1a; }
+      .status-msg.success { background: var(--green-dim); color: var(--green); border: 1px solid #1a4d35; }
+      .status-msg.info { background: var(--accent-dim); color: var(--accent); border: 1px solid #1e3a6e; }
+
+      .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid var(--border2);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        vertical-align: middle;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        gap: 10px;
+        color: var(--text-dim);
+        font-size: 13px;
+        text-align: center;
+        padding: 32px;
+      }
+      .empty-state-icon { font-size: 36px; opacity: 0.4; }
+
+      @media (max-width: 900px) {
+        .format-panel { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel" data-type="module">
+      const { useState, useRef, useCallback, useMemo, useEffect } = React;
+
+      // ─── Constants ──────────────────────────────────────────────────────────────
+
+      const EXT_LANG_MAP = {
+        js: 'javascript', jsx: 'jsx', ts: 'typescript', tsx: 'tsx',
+        py: 'python', rb: 'ruby', go: 'go', rs: 'rust', java: 'java',
+        kt: 'kotlin', swift: 'swift', cs: 'csharp', cpp: 'cpp', c: 'c',
+        h: 'c', hpp: 'cpp', php: 'php', html: 'html', css: 'css',
+        scss: 'scss', sass: 'sass', less: 'less', json: 'json',
+        yaml: 'yaml', yml: 'yaml', toml: 'toml', xml: 'xml',
+        md: 'markdown', mdx: 'mdx', sh: 'bash', bash: 'bash',
+        zsh: 'bash', fish: 'fish', ps1: 'powershell', lua: 'lua',
+        r: 'r', sql: 'sql', graphql: 'graphql', gql: 'graphql',
+        vue: 'vue', svelte: 'svelte', astro: 'astro',
+        tf: 'hcl', dockerfile: 'dockerfile', makefile: 'makefile',
+        env: 'ini', ini: 'ini', conf: 'ini', gitignore: 'gitignore',
+      };
+
+      const BINARY_EXTS = new Set([
+        'png','jpg','jpeg','gif','bmp','ico','svg','webp','avif',
+        'mp4','mp3','wav','ogg','webm','mov','avi',
+        'pdf','doc','docx','xls','xlsx','ppt','pptx',
+        'zip','tar','gz','bz2','rar','7z',
+        'exe','bin','dll','so','dylib','wasm',
+        'ttf','otf','woff','woff2','eot',
+        'db','sqlite','sqlite3',
+      ]);
+
+      const ALWAYS_EXCLUDE = ['.DS_Store', 'Thumbs.db', '__MACOSX'];
+
+      const DEFAULT_HEADER = '// ==================== {filepath} ====================';
+
+      const ZIP_LIMIT = 15 * 1024 * 1024;
+
+      // ─── Utilities ──────────────────────────────────────────────────────────────
+
+      function getExt(filename) {
+        const parts = filename.split('.');
+        if (parts.length < 2) return '';
+        return parts[parts.length - 1].toLowerCase();
+      }
+
+      function isBinary(filename) {
+        return BINARY_EXTS.has(getExt(filename));
+      }
+
+      function globMatch(pattern, str) {
+        const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
+        return new RegExp(`^${escaped}$`).test(str);
+      }
+
+      function pathMatchesPattern(pattern, filepath) {
+        const parts = filepath.split('/');
+        const filename = parts[parts.length - 1];
+        if (globMatch(pattern, filename)) return true;
+        if (globMatch(pattern, filepath)) return true;
+        for (const part of parts) {
+          if (globMatch(pattern, part)) return true;
+        }
+        return false;
+      }
+
+      function inferLang(filename) {
+        const ext = getExt(filename);
+        if (!ext && filename.toLowerCase() === 'dockerfile') return 'dockerfile';
+        if (!ext && filename.toLowerCase() === 'makefile') return 'makefile';
+        return EXT_LANG_MAP[ext] || ext || 'text';
+      }
+
+      function buildHeaderTemplate(template, { filename, filepath, extension }) {
+        return template
+          .replace(/\{filename\}/g, filename)
+          .replace(/\{filepath\}/g, filepath)
+          .replace(/\{extension\}/g, extension);
+      }
+
+      function removeLineComments(line, ext) {
+        const lineCommentMap = {
+          js: '//', jsx: '//', ts: '//', tsx: '//', java: '//', cs: '//',
+          cpp: '//', c: '//', h: '//', hpp: '//', go: '//', rs: '//',
+          swift: '//', kt: '//', php: '//', py: '#', rb: '#',
+          sh: '#', bash: '#', zsh: '#', yaml: '#', yml: '#', toml: '#',
+          r: '#', lua: '--', sql: '--',
+        };
+        const marker = lineCommentMap[ext];
+        if (!marker) return line;
+        const idx = line.indexOf(marker);
+        if (idx === -1) return line;
+        const before = line.slice(0, idx);
+        if (!/['"`]/.test(before)) {
+          return before.trimEnd();
+        }
+        return line;
+      }
+
+      function stripComments(content, ext) {
+        const blockCommentExts = new Set([
+          'js','jsx','ts','tsx','java','cs','cpp','c','h','hpp',
+          'go','rs','swift','kt','php','css','scss','sass','less',
+        ]);
+        let result = content;
+        if (blockCommentExts.has(ext)) {
+          result = result.replace(/\/\*[\s\S]*?\*\//g, '');
+        }
+        if (ext === 'html' || ext === 'xml' || ext === 'svg') {
+          result = result.replace(/<!--[\s\S]*?-->/g, '');
+        }
+        const lines = result.split('\n');
+        return lines.map(l => removeLineComments(l, ext)).join('\n');
+      }
+
+      function processContent(content, ext, opts) {
+        let result = content;
+
+        if (opts.stripComments) {
+          result = stripComments(result, ext);
+        }
+
+        let lines = result.split('\n');
+
+        if (opts.stripBlankLines) {
+          lines = lines.filter(l => l.trim().length > 0);
+        }
+
+        if (opts.stripIndentation) {
+          lines = lines.map(l => l.trimStart());
+        }
+
+        result = lines.join('\n');
+
+        if (opts.stripLineBreaks) {
+          result = result.replace(/\n+/g, ' ').trim();
+        }
+
+        return result;
+      }
+
+      // ─── GitHub API ─────────────────────────────────────────────────────────────
+
+      function parseGitHubUrl(url) {
+        const clean = url.trim().replace(/\/$/, '').replace(/\.git$/, '');
+        const match = clean.match(/github\.com[/:]([\w.-]+)\/([\w.-]+)/);
+        if (!match) return null;
+        return { owner: match[1], repo: match[2] };
+      }
+
+      async function fetchGitHubTree(owner, repo, token) {
+        const headers = { Accept: 'application/vnd.github.v3+json' };
+        if (token) headers['Authorization'] = `token ${token}`;
+
+        const repoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers });
+        if (!repoRes.ok) {
+          const err = await repoRes.json().catch(() => ({}));
+          throw new Error(err.message || `HTTP ${repoRes.status}`);
+        }
+        const repoData = await repoRes.json();
+        const branch = repoData.default_branch;
+
+        const treeRes = await fetch(
+          `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`,
+          { headers }
+        );
+        if (!treeRes.ok) {
+          const err = await treeRes.json().catch(() => ({}));
+          throw new Error(err.message || `HTTP ${treeRes.status}`);
+        }
+        const treeData = await treeRes.json();
+
+        return {
+          files: treeData.tree
+            .filter(item => item.type === 'blob')
+            .map(item => ({ path: item.path, size: item.size, sha: item.sha })),
+          owner,
+          repo,
+          branch,
+          headers,
+        };
+      }
+
+      async function fetchGitHubFileContent(owner, repo, path, branch, headers) {
+        const res = await fetch(
+          `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${branch}`,
+          { headers }
+        );
+        if (!res.ok) throw new Error(`Failed to fetch ${path}: HTTP ${res.status}`);
+        const data = await res.json();
+        if (data.encoding === 'base64') {
+          return atob(data.content.replace(/\s/g, ''));
+        }
+        throw new Error(`Unexpected encoding for ${path}`);
+      }
+
+      // ─── ZIP processing ─────────────────────────────────────────────────────────
+
+      async function processZip(file) {
+        const zip = await JSZip.loadAsync(file);
+        const files = [];
+
+        for (const [path, entry] of Object.entries(zip.files)) {
+          if (entry.dir) continue;
+          const parts = path.split('/');
+          if (parts.some(p => ALWAYS_EXCLUDE.includes(p))) continue;
+          const filename = parts[parts.length - 1];
+          if (!filename || filename.startsWith('.')) {
+            // include hidden files except always-excluded
+          }
+          files.push({ path, entry });
+        }
+
+        const result = [];
+        for (const { path, entry } of files) {
+          const ext = getExt(path);
+          if (isBinary(path)) continue;
+          try {
+            const content = await entry.async('text');
+            result.push({ path, content });
+          } catch {}
+        }
+        return result;
+      }
+
+      // ─── Tree building ───────────────────────────────────────────────────────────
+
+      function buildTree(filePaths) {
+        const root = { name: '', children: {}, files: [], path: '' };
+
+        for (const fp of filePaths) {
+          const parts = fp.split('/');
+          let node = root;
+          const dirs = parts.slice(0, -1);
+          const file = parts[parts.length - 1];
+
+          for (let i = 0; i < dirs.length; i++) {
+            const dir = dirs[i];
+            if (!node.children[dir]) {
+              node.children[dir] = {
+                name: dir,
+                children: {},
+                files: [],
+                path: parts.slice(0, i + 1).join('/'),
+              };
+            }
+            node = node.children[dir];
+          }
+          node.files.push({ name: file, path: fp });
+        }
+
+        return root;
+      }
+
+      function flattenTree(node, depth = 0, prefix = '') {
+        const items = [];
+        const dirs = Object.values(node.children).sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+        const files = [...node.files].sort((a, b) => a.name.localeCompare(b.name));
+
+        for (const dir of dirs) {
+          items.push({ type: 'dir', node: dir, depth, key: dir.path });
+          items.push(...flattenTree(dir, depth + 1, dir.path));
+        }
+        for (const file of files) {
+          items.push({ type: 'file', node: file, depth, key: file.path });
+        }
+        return items;
+      }
+
+      // ─── Components ──────────────────────────────────────────────────────────────
+
+      function Switch({ checked, onChange }) {
+        return (
+          <label className="switch">
+            <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} />
+            <span className="switch-track" />
+            <span className="switch-thumb" />
+          </label>
+        );
+      }
+
+      function ToggleRow({ title, desc, checked, onChange, children }) {
+        return (
+          <div className="toggle-row">
+            <div className="toggle-info">
+              <div className="toggle-info-title">{title}</div>
+              {desc && <div className="toggle-info-desc">{desc}</div>}
+              {children}
+            </div>
+            <Switch checked={checked} onChange={onChange} />
+          </div>
+        );
+      }
+
+      function TreeCheckbox({ checked, indeterminate, onChange }) {
+        const ref = useRef();
+        useEffect(() => {
+          if (ref.current) ref.current.indeterminate = indeterminate;
+        }, [indeterminate]);
+        return (
+          <input
+            ref={ref}
+            type="checkbox"
+            className="tree-node-checkbox"
+            checked={checked}
+            onChange={e => onChange(e.target.checked)}
+            onClick={e => e.stopPropagation()}
+          />
+        );
+      }
+
+      function FileTree({ items, selected, collapsed, onToggleSelect, onToggleCollapse, extFilter, excludePatterns }) {
+        const visibleItems = useMemo(() => {
+          if (!collapsed) return items;
+          const hiddenPaths = new Set();
+          for (const item of items) {
+            if (item.type === 'dir' && collapsed.has(item.key)) {
+              for (const other of items) {
+                if (other.key !== item.key && other.key.startsWith(item.key + '/')) {
+                  hiddenPaths.add(other.key);
+                }
+              }
+            }
+          }
+          return items.filter(i => !hiddenPaths.has(i.key));
+        }, [items, collapsed]);
+
+        function getCheckState(item) {
+          if (item.type === 'file') {
+            return { checked: selected.has(item.key), indeterminate: false };
+          }
+          const prefix = item.key + '/';
+          const children = items.filter(i => i.key.startsWith(prefix));
+          if (children.length === 0) return { checked: false, indeterminate: false };
+          const sel = children.filter(i => selected.has(i.key) && i.type === 'file').length;
+          const total = children.filter(i => i.type === 'file').length;
+          if (sel === 0) return { checked: false, indeterminate: false };
+          if (sel === total) return { checked: true, indeterminate: false };
+          return { checked: false, indeterminate: true };
+        }
+
+        function getFileIcon(name) {
+          const ext = getExt(name);
+          const icons = {
+            js: '🟨', jsx: '⚛️', ts: '🔷', tsx: '⚛️', py: '🐍',
+            rb: '💎', go: '🐹', rs: '🦀', java: '☕', css: '🎨',
+            scss: '🎨', html: '🌐', json: '📋', yaml: '📋', yml: '📋',
+            md: '📝', sh: '📜', bash: '📜', sql: '🗃️', vue: '💚',
+            svelte: '🧡', php: '🐘', kt: '🟪', swift: '🍊',
+          };
+          return icons[ext] || '📄';
+        }
+
+        function isFiltered(item) {
+          if (extFilter.length === 0 && excludePatterns.length === 0) return false;
+          if (item.type === 'file') {
+            const ext = '.' + getExt(item.key);
+            if (extFilter.length > 0 && !extFilter.includes(ext)) return true;
+            if (excludePatterns.some(p => pathMatchesPattern(p, item.key))) return true;
+          }
+          return false;
+        }
+
+        return (
+          <div className="file-tree-scroll">
+            {visibleItems.map(item => {
+              const { checked, indeterminate } = getCheckState(item);
+              const isDir = item.type === 'dir';
+              const isCol = isDir && collapsed && collapsed.has(item.key);
+              const filtered = isFiltered(item);
+
+              return (
+                <div
+                  key={item.key}
+                  className={`tree-node ${checked ? 'selected' : ''}`}
+                  style={{
+                    paddingLeft: 8 + item.depth * 16,
+                    opacity: filtered ? 0.4 : 1,
+                  }}
+                  onClick={() => {
+                    if (isDir) onToggleCollapse(item.key);
+                    else onToggleSelect(item);
+                  }}
+                >
+                  <TreeCheckbox
+                    checked={checked}
+                    indeterminate={indeterminate}
+                    onChange={checked => onToggleSelect(item, checked)}
+                  />
+                  <span className="tree-node-toggle">
+                    {isDir ? (isCol ? '▶' : '▼') : ''}
+                  </span>
+                  <span className="tree-node-icon">
+                    {isDir ? (isCol ? '📁' : '📂') : getFileIcon(item.node.name || item.node.path)}
+                  </span>
+                  <span className="tree-node-name">
+                    {item.node.name}
+                  </span>
+                  {!isDir && (
+                    <span className="tree-node-ext">.{getExt(item.node.name)}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        );
+      }
+
+      // ─── Main App ────────────────────────────────────────────────────────────────
+
+      function App() {
+        const [screen, setScreen] = useState('landing');
+        const [sourceMode, setSourceMode] = useState('github');
+
+        const [githubUrl, setGithubUrl] = useState('');
+        const [githubToken, setGithubToken] = useState('');
+        const [zipFile, setZipFile] = useState(null);
+        const [dragOver, setDragOver] = useState(false);
+
+        const [loading, setLoading] = useState(false);
+        const [loadProgress, setLoadProgress] = useState(0);
+        const [statusMsg, setStatusMsg] = useState(null);
+
+        const [fileContents, setFileContents] = useState({});
+        const [treeItems, setTreeItems] = useState([]);
+        const [selected, setSelected] = useState(new Set());
+        const [collapsed, setCollapsed] = useState(new Set());
+
+        const [extFilter, setExtFilterRaw] = useState('');
+        const [excludeInput, setExcludeInput] = useState('');
+
+        const [opts, setOpts] = useState({
+          stripBlankLines: false,
+          stripComments: false,
+          stripIndentation: false,
+          addHeader: true,
+          stripLineBreaks: false,
+          headerTemplate: DEFAULT_HEADER,
+        });
+        const [outputFmt, setOutputFmt] = useState('txt');
+
+        const [githubMeta, setGithubMeta] = useState(null);
+
+        const fileInputRef = useRef();
+
+        const extFilterList = useMemo(() =>
+          extFilter.split(',').map(s => s.trim()).filter(Boolean),
+          [extFilter]
+        );
+
+        const excludePatterns = useMemo(() =>
+          excludeInput.split(',').map(s => s.trim()).filter(Boolean),
+          [excludeInput]
+        );
+
+        function setOpt(key, val) {
+          setOpts(o => ({ ...o, [key]: val }));
+        }
+
+        function setStatus(msg, type = 'info') {
+          setStatusMsg(msg ? { msg, type } : null);
+        }
+
+        // Auto-apply exclude patterns
+        useEffect(() => {
+          if (treeItems.length === 0) return;
+          if (excludePatterns.length === 0) return;
+          setSelected(prev => {
+            const next = new Set(prev);
+            for (const item of treeItems) {
+              if (item.type === 'file' && excludePatterns.some(p => pathMatchesPattern(p, item.key))) {
+                next.delete(item.key);
+              }
+            }
+            return next;
+          });
+        }, [excludePatterns, treeItems]);
+
+        // Auto-apply ext filter deselection
+        useEffect(() => {
+          if (treeItems.length === 0) return;
+          if (extFilterList.length === 0) return;
+          setSelected(prev => {
+            const next = new Set(prev);
+            for (const item of treeItems) {
+              if (item.type === 'file') {
+                const ext = '.' + getExt(item.key);
+                if (!extFilterList.includes(ext)) next.delete(item.key);
+              }
+            }
+            return next;
+          });
+        }, [extFilterList, treeItems]);
+
+        function loadFiles(paths, contents) {
+          const filtered = paths.filter(p => {
+            const parts = p.split('/');
+            return !parts.some(pt => ALWAYS_EXCLUDE.includes(pt)) && !isBinary(p);
+          });
+
+          const tree = buildTree(filtered);
+          const items = flattenTree(tree);
+
+          setTreeItems(items);
+          setFileContents(contents);
+          setSelected(new Set(filtered));
+          setCollapsed(new Set());
+          setScreen('editor');
+        }
+
+        async function handleGitHubLoad() {
+          const parsed = parseGitHubUrl(githubUrl);
+          if (!parsed) {
+            setStatus('Invalid GitHub URL. Expected: https://github.com/owner/repo', 'error');
+            return;
+          }
+
+          setLoading(true);
+          setLoadProgress(10);
+          setStatus(null);
+
+          try {
+            const meta = await fetchGitHubTree(parsed.owner, parsed.repo, githubToken || null);
+            setGithubMeta(meta);
+            setLoadProgress(30);
+
+            const paths = meta.files
+              .filter(f => !isBinary(f.path) && f.size < 500000)
+              .map(f => f.path);
+
+            setLoadProgress(40);
+
+            // Fetch contents in batches
+            const contents = {};
+            const batchSize = 5;
+            for (let i = 0; i < paths.length; i += batchSize) {
+              const batch = paths.slice(i, i + batchSize);
+              await Promise.all(batch.map(async path => {
+                try {
+                  const content = await fetchGitHubFileContent(
+                    meta.owner, meta.repo, path, meta.branch, meta.headers
+                  );
+                  contents[path] = content;
+                } catch {
+                  // skip files that can't be fetched
+                }
+              }));
+              setLoadProgress(40 + Math.round((i / paths.length) * 55));
+            }
+
+            setLoadProgress(100);
+            loadFiles(Object.keys(contents), contents);
+            setStatus(`Loaded ${Object.keys(contents).length} files from ${parsed.owner}/${parsed.repo}`, 'success');
+          } catch (err) {
+            setStatus(err.message || 'Failed to load repository', 'error');
+          } finally {
+            setLoading(false);
+          }
+        }
+
+        async function handleZipLoad(file) {
+          if (!file) return;
+
+          const isLocal = file.type === 'application/x-zip-compressed' || file.name.endsWith('.zip');
+          if (file.size > ZIP_LIMIT) {
+            setStatus(`File exceeds 15 MB limit (${(file.size / 1024 / 1024).toFixed(1)} MB)`, 'error');
+            return;
+          }
+
+          setLoading(true);
+          setLoadProgress(10);
+          setStatus(null);
+
+          try {
+            const entries = await processZip(file);
+            setLoadProgress(80);
+
+            // Strip common top-level folder
+            const paths = entries.map(e => e.path);
+            const topDirs = new Set(paths.map(p => p.split('/')[0]));
+            let stripPrefix = '';
+            if (topDirs.size === 1) {
+              const top = [...topDirs][0];
+              if (paths.every(p => p.startsWith(top + '/'))) stripPrefix = top + '/';
+            }
+
+            const contents = {};
+            for (const { path, content } of entries) {
+              const cleanPath = stripPrefix ? path.slice(stripPrefix.length) : path;
+              if (cleanPath) contents[cleanPath] = content;
+            }
+
+            setLoadProgress(100);
+            loadFiles(Object.keys(contents), contents);
+            setStatus(`Loaded ${Object.keys(contents).length} files from ${file.name}`, 'success');
+          } catch (err) {
+            setStatus(err.message || 'Failed to process ZIP', 'error');
+          } finally {
+            setLoading(false);
+          }
+        }
+
+        function handleToggleSelect(item, forceVal) {
+          setSelected(prev => {
+            const next = new Set(prev);
+            if (item.type === 'file') {
+              const v = forceVal !== undefined ? forceVal : !prev.has(item.key);
+              if (v) next.add(item.key);
+              else next.delete(item.key);
+            } else {
+              const prefix = item.key + '/';
+              const children = treeItems.filter(i => i.type === 'file' && i.key.startsWith(prefix));
+              const allSel = children.every(c => prev.has(c.key));
+              const v = forceVal !== undefined ? forceVal : !allSel;
+              for (const c of children) {
+                if (v) next.add(c.key);
+                else next.delete(c.key);
+              }
+            }
+            return next;
+          });
+        }
+
+        function handleToggleCollapse(key) {
+          setCollapsed(prev => {
+            const next = new Set(prev);
+            if (next.has(key)) next.delete(key);
+            else next.add(key);
+            return next;
+          });
+        }
+
+        function selectAll() {
+          const files = treeItems.filter(i => i.type === 'file').map(i => i.key);
+          setSelected(new Set(files));
+        }
+
+        function deselectAll() {
+          setSelected(new Set());
+        }
+
+        function generateOutput() {
+          const selectedFiles = treeItems
+            .filter(i => i.type === 'file' && selected.has(i.key))
+            .map(i => i.key)
+            .sort();
+
+          const parts = [];
+
+          for (const filepath of selectedFiles) {
+            const content = fileContents[filepath];
+            if (content === undefined) continue;
+
+            const filename = filepath.split('/').pop();
+            const ext = getExt(filename);
+            const lang = inferLang(filename);
+
+            let processed = processContent(content, ext, opts);
+
+            if (opts.addHeader) {
+              const header = buildHeaderTemplate(opts.headerTemplate || DEFAULT_HEADER, {
+                filename,
+                filepath,
+                extension: ext,
+              });
+              if (outputFmt === 'md') {
+                parts.push(`${header}\n\n\`\`\`${lang}\n${processed}\n\`\`\``);
+              } else {
+                parts.push(`${header}\n${processed}`);
+              }
+            } else {
+              if (outputFmt === 'md') {
+                parts.push(`\`\`\`${lang}\n${processed}\n\`\`\``);
+              } else {
+                parts.push(processed);
+              }
+            }
+          }
+
+          const output = parts.join('\n\n');
+          const blob = new Blob([output], { type: 'text/plain;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `repo-export.${outputFmt}`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+
+        const selectedCount = useMemo(() =>
+          treeItems.filter(i => i.type === 'file' && selected.has(i.key)).length,
+          [treeItems, selected]
+        );
+        const totalFileCount = useMemo(() =>
+          treeItems.filter(i => i.type === 'file').length,
+          [treeItems]
+        );
+
+        // ── Render ──────────────────────────────────────────────────────────────
+
+        if (screen === 'landing') {
+          return (
+            <div className="layout">
+              <div className="topbar">
+                <div className="topbar-logo">
+                  Code<span>Dump</span>
+                </div>
+                <div className="topbar-sep" />
+                <div className="topbar-desc">Consolidate any repo into a single file</div>
+              </div>
+              <div className="landing">
+                <div className="landing-hero">
+                  <h1>Export your repo as one <span>file</span></h1>
+                  <p>Pick a source, select what to include, configure the format, and download.</p>
+                </div>
+                <div className="landing-cards">
+                  <div className="source-card" onClick={() => { setSourceMode('github'); setScreen('source'); }}>
+                    <div className="source-card-icon">🐙</div>
+                    <h3>GitHub Repository</h3>
+                    <p>Load any public repo without authentication, or use a Personal Access Token for private repos.</p>
+                  </div>
+                  <div className="source-card" onClick={() => { setSourceMode('zip'); setScreen('source'); }}>
+                    <div className="source-card-icon">📦</div>
+                    <h3>Upload ZIP</h3>
+                    <p>Extract and process a local ZIP archive directly in your browser. No upload, no server.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        if (screen === 'source') {
+          return (
+            <div className="layout">
+              <div className="topbar">
+                <div className="topbar-logo">Code<span>Dump</span></div>
+                <div className="topbar-sep" />
+                <button className="btn-ghost" onClick={() => { setScreen('landing'); setStatus(null); }}>
+                  Back
+                </button>
+              </div>
+              <div className="main" style={{ alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 24, padding: 40 }}>
+                <div style={{ width: '100%', maxWidth: 460 }}>
+                  <div className="source-tabs" style={{ borderRadius: `${8}px ${8}px 0 0` }}>
+                    <button
+                      className={`source-tab ${sourceMode === 'github' ? 'active' : ''}`}
+                      onClick={() => setSourceMode('github')}
+                    >
+                      🐙 GitHub
+                    </button>
+                    <button
+                      className={`source-tab ${sourceMode === 'zip' ? 'active' : ''}`}
+                      onClick={() => setSourceMode('zip')}
+                    >
+                      📦 ZIP File
+                    </button>
+                  </div>
+
+                  <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 8px 8px', padding: 20 }}>
+                    {sourceMode === 'github' && (
+                      <>
+                        <div className="field">
+                          <label className="field-label">Repository URL</label>
+                          <input
+                            type="url"
+                            placeholder="https://github.com/owner/repo"
+                            value={githubUrl}
+                            onChange={e => setGithubUrl(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleGitHubLoad()}
+                          />
+                        </div>
+                        <div className="field">
+                          <label className="field-label">Personal Access Token <span style={{ color: 'var(--text-dim)', fontWeight: 400 }}>(optional, for private repos)</span></label>
+                          <input
+                            type="password"
+                            placeholder="ghp_..."
+                            value={githubToken}
+                            onChange={e => setGithubToken(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleGitHubLoad()}
+                          />
+                          <div className="field-hint">Token is never logged or stored anywhere.</div>
+                        </div>
+                        {statusMsg && (
+                          <div className={`status-msg ${statusMsg.type}`}>{statusMsg.msg}</div>
+                        )}
+                        {loading && (
+                          <div className="progress-bar-wrap">
+                            <div className="progress-bar" style={{ width: `${loadProgress}%` }} />
+                          </div>
+                        )}
+                        <button
+                          className="btn-primary generate-btn"
+                          style={{ marginTop: 12 }}
+                          onClick={handleGitHubLoad}
+                          disabled={loading || !githubUrl.trim()}
+                        >
+                          {loading ? <><span className="spinner" /> Loading...</> : 'Load Repository'}
+                        </button>
+                      </>
+                    )}
+
+                    {sourceMode === 'zip' && (
+                      <>
+                        <div
+                          className={`dropzone ${dragOver ? 'drag-over' : ''}`}
+                          onClick={() => fileInputRef.current?.click()}
+                          onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                          onDragLeave={() => setDragOver(false)}
+                          onDrop={e => {
+                            e.preventDefault();
+                            setDragOver(false);
+                            const f = e.dataTransfer.files[0];
+                            if (f) { setZipFile(f); handleZipLoad(f); }
+                          }}
+                        >
+                          <div className="dropzone-icon">📂</div>
+                          <div className="dropzone-text">
+                            <strong>Click to browse</strong> or drag & drop a ZIP file
+                          </div>
+                          <div className="dropzone-limit">Max 15 MB</div>
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".zip"
+                            style={{ display: 'none' }}
+                            onChange={e => {
+                              const f = e.target.files[0];
+                              if (f) { setZipFile(f); handleZipLoad(f); }
+                            }}
+                          />
+                        </div>
+                        {zipFile && (
+                          <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-muted)' }}>
+                            {zipFile.name} ({(zipFile.size / 1024).toFixed(0)} KB)
+                          </div>
+                        )}
+                        {statusMsg && (
+                          <div className={`status-msg ${statusMsg.type}`}>{statusMsg.msg}</div>
+                        )}
+                        {loading && (
+                          <div className="progress-bar-wrap">
+                            <div className="progress-bar" style={{ width: `${loadProgress}%` }} />
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        // Editor screen
+        return (
+          <div className="layout">
+            <div className="topbar">
+              <div className="topbar-logo">Code<span>Dump</span></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 8 }}>
+                <span className="badge badge-blue">{selectedCount} / {totalFileCount} files</span>
+                {statusMsg && statusMsg.type === 'success' && (
+                  <span className="badge badge-green">{statusMsg.msg.split(' ').slice(0, 3).join(' ')}</span>
+                )}
+              </div>
+              <div className="topbar-sep" />
+              <button className="btn-ghost" onClick={() => { setScreen('source'); setStatus(null); }}>
+                Change source
+              </button>
+              <button className="btn-ghost" onClick={() => { setScreen('landing'); setStatus(null); }}>
+                Home
+              </button>
+            </div>
+
+            <div className="main">
+              {/* File tree */}
+              <div className="file-tree-area">
+                <div className="file-tree-toolbar">
+                  <div className="file-tree-toolbar-row">
+                    <input
+                      type="text"
+                      placeholder="Filter by extension: .js, .ts, .jsx"
+                      value={extFilter}
+                      onChange={e => setExtFilterRaw(e.target.value)}
+                      style={{ flex: 1 }}
+                    />
+                    <button className="btn-ghost" onClick={selectAll}>All</button>
+                    <button className="btn-ghost" onClick={deselectAll}>None</button>
+                  </div>
+                  <div className="file-tree-toolbar-row">
+                    <input
+                      type="text"
+                      placeholder="Exclude patterns: node_modules, *.test.js, dist"
+                      value={excludeInput}
+                      onChange={e => setExcludeInput(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <FileTree
+                  items={treeItems}
+                  selected={selected}
+                  collapsed={collapsed}
+                  onToggleSelect={handleToggleSelect}
+                  onToggleCollapse={handleToggleCollapse}
+                  extFilter={extFilterList}
+                  excludePatterns={excludePatterns}
+                />
+
+                <div className="tree-stats">
+                  <span>{selectedCount} files selected</span>
+                  <span>{totalFileCount} total</span>
+                  <span>{treeItems.filter(i => i.type === 'dir').length} folders</span>
+                </div>
+              </div>
+
+              {/* Format options */}
+              <div className="format-panel">
+                <div className="panel-section">
+                  <div className="panel-label">Format Options</div>
+                  <ToggleRow
+                    title="Add file headers"
+                    desc="Insert a separator line before each file"
+                    checked={opts.addHeader}
+                    onChange={v => setOpt('addHeader', v)}
+                  >
+                    {opts.addHeader && (
+                      <input
+                        type="text"
+                        value={opts.headerTemplate}
+                        onChange={e => setOpt('headerTemplate', e.target.value)}
+                        style={{ marginTop: 8, fontFamily: 'var(--mono)', fontSize: 11 }}
+                        placeholder={DEFAULT_HEADER}
+                      />
+                    )}
+                  </ToggleRow>
+                  <ToggleRow
+                    title="Strip blank lines"
+                    desc="Remove lines that contain only whitespace"
+                    checked={opts.stripBlankLines}
+                    onChange={v => setOpt('stripBlankLines', v)}
+                  />
+                  <ToggleRow
+                    title="Strip comments"
+                    desc="Remove // # /* */ <!-- --> based on file type"
+                    checked={opts.stripComments}
+                    onChange={v => setOpt('stripComments', v)}
+                  />
+                  <ToggleRow
+                    title="Strip indentation"
+                    desc="Remove leading whitespace from every line"
+                    checked={opts.stripIndentation}
+                    onChange={v => setOpt('stripIndentation', v)}
+                  />
+                  <ToggleRow
+                    title="Strip line breaks"
+                    desc="Collapse all content to a single line"
+                    checked={opts.stripLineBreaks}
+                    onChange={v => setOpt('stripLineBreaks', v)}
+                  />
+                </div>
+
+                <div className="panel-section">
+                  <div className="panel-label">Output Format</div>
+                  <div className="output-row" style={{ marginBottom: 12 }}>
+                    <button
+                      className={`output-btn ${outputFmt === 'txt' ? 'active' : ''}`}
+                      onClick={() => setOutputFmt('txt')}
+                    >.txt</button>
+                    <button
+                      className={`output-btn ${outputFmt === 'md' ? 'active' : ''}`}
+                      onClick={() => setOutputFmt('md')}
+                    >.md</button>
+                  </div>
+                  <button
+                    className="btn-primary generate-btn"
+                    onClick={generateOutput}
+                    disabled={selectedCount === 0}
+                  >
+                    Download {selectedCount > 0 ? `(${selectedCount} files)` : ''}
+                  </button>
+                  {selectedCount === 0 && (
+                    <div className="field-hint" style={{ marginTop: 6, textAlign: 'center' }}>
+                      Select at least one file to export.
+                    </div>
+                  )}
+                </div>
+
+                <div className="panel-section">
+                  <div className="panel-label">Variables for header</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                    {['{filename}', '{filepath}', '{extension}'].map(v => (
+                      <span key={v} className="tag">{v}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+  </body>
+</html>
